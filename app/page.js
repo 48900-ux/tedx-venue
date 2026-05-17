@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from "react";
 
 // ─── GOOGLE SHEETS API ─────────────────────────────────────────────────────────
 
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyGaewIkufOE_1FnaoqY4D4qzyZJwRFqd3M06szZQ_UfAZWkhvBn7TBln9o8BBU5W4h/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw6Yl-fHdBO2LvmSNx10Hzi2D3FfBRbke7VH6XQxDhFMc9v9cpMn4uPVoBNqSS6Fb7J/exec";
 
 async function apiGetBookings() {
   try {
@@ -21,15 +21,6 @@ async function apiCreateBooking(data) {
       method: "POST",
       body: JSON.stringify({ action: "create", ...data }),
     });
-    return await res.json();
-  } catch {
-    return { error: "Failed" };
-  }
-}
-
-async function apiUpdateStatus(id, status) {
-  try {
-    const res = await fetch(`${SCRIPT_URL}?action=updateStatus&id=${encodeURIComponent(id)}&status=${encodeURIComponent(status)}`);
     return await res.json();
   } catch {
     return { error: "Failed" };
@@ -133,45 +124,105 @@ function FadeUp({ children, delay = 0 }) {
 
 function Navbar({ activePage, setActivePage }) {
   const [scrolled, setScrolled] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const links = ["Home", "Spaces", "Bookings", "Community", "FAQ"];
+
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 60);
     window.addEventListener("scroll", fn);
     return () => window.removeEventListener("scroll", fn);
   }, []);
 
-  const links = ["Home", "Spaces", "Bookings", "Community", "FAQ"];
+  const handleNav = (page) => {
+    setActivePage(page);
+    setMenuOpen(false);
+  };
 
   return (
-    <nav style={{
-      position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
-      background: scrolled ? "rgba(0,0,0,0.92)" : "transparent",
-      backdropFilter: scrolled ? "blur(16px)" : "none",
-      borderBottom: scrolled ? "1px solid rgba(255,255,255,0.07)" : "1px solid transparent",
-      padding: "0 2rem", transition: "background 0.4s, border-color 0.4s",
-    }}>
-      <div style={{ maxWidth: 1280, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", height: 64 }}>
-        <button onClick={() => setActivePage("home")} style={{ background: "none", border: "none", cursor: "pointer" }}>
-          <span style={{ fontFamily: "'Bebas Neue', Impact, sans-serif", fontSize: 20, color: "white", letterSpacing: 2 }}>
-            TEDX <span style={{ color: "#e53e3e" }}>BANGKOK</span> YOUTH
-          </span>
-        </button>
-        <div style={{ display: "flex", gap: 32, alignItems: "center" }}>
-          {links.map(l => (
-            <button key={l} onClick={() => setActivePage(l.toLowerCase())} style={{
-              background: "none", border: "none", cursor: "pointer",
-              color: activePage === l.toLowerCase() ? "#e53e3e" : "rgba(255,255,255,0.75)",
-              fontSize: 13, fontWeight: 600, letterSpacing: 1.5, textTransform: "uppercase",
-              transition: "color 0.2s", fontFamily: "inherit",
-            }}>{l}</button>
-          ))}
-          <button onClick={() => setActivePage("spaces")} style={{
-            background: "#e53e3e", color: "white", border: "none", borderRadius: 0,
-            padding: "10px 20px", fontWeight: 700, fontSize: 12, letterSpacing: 2,
-            textTransform: "uppercase", cursor: "pointer", fontFamily: "inherit",
-          }}>Book a Space</button>
+    <>
+      <nav style={{
+        position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
+        background: scrolled || menuOpen ? "rgba(0,0,0,0.97)" : "transparent",
+        backdropFilter: scrolled ? "blur(16px)" : "none",
+        borderBottom: scrolled ? "1px solid rgba(255,255,255,0.07)" : "1px solid transparent",
+        padding: "0 1.25rem",
+        transition: "background 0.4s, border-color 0.4s",
+      }}>
+        <div style={{ maxWidth: 1280, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", height: 64 }}>
+
+          {/* ── Logo: TEDx แดง / Bangkok Youth ขาว */}
+          <button onClick={() => handleNav("home")} style={{ background: "none", border: "none", cursor: "pointer" }}>
+            <span style={{ fontFamily: "'Bebas Neue', Impact, sans-serif", fontSize: 20, letterSpacing: 2 }}>
+              <span style={{ color: "#e53e3e" }}>TEDx</span>
+              <span style={{ color: "white" }}> Bangkok Youth</span>
+            </span>
+          </button>
+
+          {/* ── Desktop links (hidden on mobile) */}
+          <div style={{ display: "flex", gap: 28, alignItems: "center" }} className="desktop-nav">
+            {links.map(l => (
+              <button key={l} onClick={() => handleNav(l.toLowerCase())} style={{
+                background: "none", border: "none", cursor: "pointer",
+                color: activePage === l.toLowerCase() ? "#e53e3e" : "rgba(255,255,255,0.75)",
+                fontSize: 12, fontWeight: 600, letterSpacing: 1.5, textTransform: "uppercase",
+                transition: "color 0.2s", fontFamily: "inherit",
+              }}>{l}</button>
+            ))}
+            <button onClick={() => handleNav("spaces")} style={{
+              background: "#e53e3e", color: "white", border: "none",
+              padding: "9px 18px", fontWeight: 700, fontSize: 11, letterSpacing: 2,
+              textTransform: "uppercase", cursor: "pointer", fontFamily: "inherit",
+            }}>Book a Space</button>
+          </div>
+
+          {/* ── Hamburger (mobile only) */}
+          <button
+            onClick={() => setMenuOpen(o => !o)}
+            className="hamburger"
+            style={{ background: "none", border: "none", cursor: "pointer", padding: 8, display: "none", flexDirection: "column", gap: 5 }}
+          >
+            <span style={{ display: "block", width: 24, height: 2, background: "white", transition: "all 0.3s", transform: menuOpen ? "rotate(45deg) translate(5px,5px)" : "none" }} />
+            <span style={{ display: "block", width: 24, height: 2, background: "white", opacity: menuOpen ? 0 : 1, transition: "all 0.3s" }} />
+            <span style={{ display: "block", width: 24, height: 2, background: "white", transition: "all 0.3s", transform: menuOpen ? "rotate(-45deg) translate(5px,-5px)" : "none" }} />
+          </button>
         </div>
-      </div>
-    </nav>
+
+        {/* ── Mobile dropdown menu */}
+        {menuOpen && (
+          <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", padding: "12px 0 20px" }}>
+            {links.map(l => (
+              <button key={l} onClick={() => handleNav(l.toLowerCase())} style={{
+                display: "block", width: "100%", background: "none", border: "none",
+                color: activePage === l.toLowerCase() ? "#e53e3e" : "rgba(255,255,255,0.8)",
+                fontSize: 14, fontWeight: 600, letterSpacing: 1.5, textTransform: "uppercase",
+                padding: "12px 20px", textAlign: "left", cursor: "pointer", fontFamily: "inherit",
+              }}>{l}</button>
+            ))}
+            <div style={{ padding: "8px 20px 0" }}>
+              <button onClick={() => handleNav("spaces")} style={{
+                width: "100%", background: "#e53e3e", color: "white", border: "none",
+                padding: "13px", fontWeight: 700, fontSize: 12, letterSpacing: 2,
+                textTransform: "uppercase", cursor: "pointer", fontFamily: "inherit",
+              }}>Book a Space</button>
+            </div>
+          </div>
+        )}
+      </nav>
+
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap');
+        @keyframes fadeSlideUp { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }
+        * { box-sizing:border-box; margin:0; padding:0; }
+        body { font-family:'DM Sans',sans-serif; background:black; color:white; }
+        input,textarea,select { font-family:'DM Sans',sans-serif; }
+        ::-webkit-scrollbar{width:4px;} ::-webkit-scrollbar-track{background:black;} ::-webkit-scrollbar-thumb{background:#e53e3e;}
+        select option { background:#1a1a1a; color:white; }
+        @media (max-width: 768px) {
+          .desktop-nav { display: none !important; }
+          .hamburger { display: flex !important; }
+        }
+      `}</style>
+    </>
   );
 }
 
@@ -188,54 +239,44 @@ function Hero({ setActivePage }) {
     <section style={{ position: "relative", height: "100vh", minHeight: 600, background: "black", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
       <div style={{ position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)", width: 1, height: "40%", background: "linear-gradient(to bottom, transparent, #e53e3e)", opacity: 0.6, zIndex: 2 }} />
       <div style={{ position: "absolute", bottom: 0, left: "50%", transform: "translateX(-50%)", width: 1, height: "40%", background: "linear-gradient(to top, transparent, #e53e3e)", opacity: 0.3, zIndex: 2 }} />
-      <div style={{ position: "absolute", bottom: -20, left: "50%", transform: "translateX(-50%)", fontFamily: "'Bebas Neue', Impact, sans-serif", fontSize: "clamp(80px,18vw,240px)", color: "rgba(255,255,255,0.03)", letterSpacing: -4, whiteSpace: "nowrap", userSelect: "none", zIndex: 1 }}>
+      <div style={{ position: "absolute", bottom: -20, left: "50%", transform: "translateX(-50%)", fontFamily: "'Bebas Neue', Impact, sans-serif", fontSize: "clamp(60px,15vw,240px)", color: "rgba(255,255,255,0.03)", letterSpacing: -4, whiteSpace: "nowrap", userSelect: "none", zIndex: 1 }}>
         IDEAS HAPPEN HERE
       </div>
-      <div style={{ position: "relative", zIndex: 3, textAlign: "center", padding: "0 2rem", maxWidth: 900 }}>
+
+      <div style={{ position: "relative", zIndex: 3, textAlign: "center", padding: "0 1.5rem", maxWidth: 900, width: "100%" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12, marginBottom: 24 }}>
-          <div style={{ width: 40, height: 2, background: "#e53e3e" }} />
-          <span style={{ color: "#e53e3e", fontSize: 11, fontWeight: 700, letterSpacing: 4, textTransform: "uppercase" }}>Where Ideas Take Shape</span>
-          <div style={{ width: 40, height: 2, background: "#e53e3e" }} />
+          <div style={{ width: 32, height: 2, background: "#e53e3e" }} />
+          <span style={{ color: "#e53e3e", fontSize: 10, fontWeight: 700, letterSpacing: 3, textTransform: "uppercase" }}>Where Ideas Take Shape</span>
+          <div style={{ width: 32, height: 2, background: "#e53e3e" }} />
         </div>
-        <h1 style={{ fontFamily: "'Bebas Neue', Impact, sans-serif", fontSize: "clamp(60px,12vw,140px)", color: "white", lineHeight: 0.9, letterSpacing: -2, marginBottom: 32, animation: "fadeSlideUp 0.9s ease both" }}>
+        <h1 style={{ fontFamily: "'Bebas Neue', Impact, sans-serif", fontSize: "clamp(56px,12vw,140px)", color: "white", lineHeight: 0.9, letterSpacing: -2, marginBottom: 28, animation: "fadeSlideUp 0.9s ease both" }}>
           <span style={{ display: "block" }}>BOOK YOUR</span>
           <span style={{ display: "block", color: "#e53e3e" }}>STAGE</span>
         </h1>
-        <p style={{ color: "rgba(255,255,255,0.6)", fontSize: "clamp(14px,2vw,18px)", maxWidth: 580, margin: "0 auto 40px", lineHeight: 1.7, animation: "fadeSlideUp 0.9s ease 0.2s both" }}>
+        <p style={{ color: "rgba(255,255,255,0.6)", fontSize: "clamp(13px,2vw,17px)", maxWidth: 520, margin: "0 auto 36px", lineHeight: 1.7, animation: "fadeSlideUp 0.9s ease 0.2s both" }}>
           ค้นหาสถานที่ที่เหมาะสมกับไอเดียของคุณ ไม่ว่าจะเป็น Workshop ขนาดเล็ก หรือ Stage สำหรับเปลี่ยนโลก
         </p>
-        <div style={{ display: "flex", gap: 16, justifyContent: "center", flexWrap: "wrap", animation: "fadeSlideUp 0.9s ease 0.35s both" }}>
+        <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap", animation: "fadeSlideUp 0.9s ease 0.35s both" }}>
           <button onClick={() => setActivePage("spaces")}
             onMouseEnter={e => e.target.style.background = "#c53030"}
             onMouseLeave={e => e.target.style.background = "#e53e3e"}
-            style={{ background: "#e53e3e", color: "white", border: "none", padding: "16px 40px", fontWeight: 700, fontSize: 13, letterSpacing: 2.5, textTransform: "uppercase", cursor: "pointer", fontFamily: "inherit" }}>
+            style={{ background: "#e53e3e", color: "white", border: "none", padding: "14px 32px", fontWeight: 700, fontSize: 12, letterSpacing: 2, textTransform: "uppercase", cursor: "pointer", fontFamily: "inherit" }}>
             Explore Spaces
           </button>
           <button onClick={() => setActivePage("bookings")}
-            onMouseEnter={e => e.target.style.borderColor = "white"}
-            onMouseLeave={e => e.target.style.borderColor = "rgba(255,255,255,0.3)"}
-            style={{ background: "transparent", color: "white", border: "1px solid rgba(255,255,255,0.3)", padding: "16px 40px", fontWeight: 700, fontSize: 13, letterSpacing: 2.5, textTransform: "uppercase", cursor: "pointer", fontFamily: "inherit" }}>
+            style={{ background: "transparent", color: "white", border: "1px solid rgba(255,255,255,0.3)", padding: "14px 32px", fontWeight: 700, fontSize: 12, letterSpacing: 2, textTransform: "uppercase", cursor: "pointer", fontFamily: "inherit" }}>
             Track Booking
           </button>
         </div>
-        <div style={{ display: "flex", gap: 48, justifyContent: "center", marginTop: 72, animation: "fadeSlideUp 0.9s ease 0.5s both" }}>
-          {[{ n: count, label: "Spaces Available" }, { n: "500+", label: "Events Hosted" }, { n: "99%", label: "Satisfaction Rate" }].map(({ n, label }) => (
+        <div style={{ display: "flex", gap: 36, justifyContent: "center", marginTop: 60, animation: "fadeSlideUp 0.9s ease 0.5s both", flexWrap: "wrap" }}>
+          {[{ n: count, label: "Spaces Available" }, { n: "12+", label: "Youth Speakers" }, { n: "100%", label: "Safe Space" }].map(({ n, label }) => (
             <div key={label} style={{ textAlign: "center" }}>
-              <div style={{ fontFamily: "'Bebas Neue', Impact, sans-serif", fontSize: 36, color: "white", lineHeight: 1 }}>{n}</div>
-              <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 11, letterSpacing: 2, textTransform: "uppercase", marginTop: 4 }}>{label}</div>
+              <div style={{ fontFamily: "'Bebas Neue', Impact, sans-serif", fontSize: 32, color: "white", lineHeight: 1 }}>{n}</div>
+              <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 10, letterSpacing: 2, textTransform: "uppercase", marginTop: 4 }}>{label}</div>
             </div>
           ))}
         </div>
       </div>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap');
-        @keyframes fadeSlideUp { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }
-        * { box-sizing:border-box; margin:0; padding:0; }
-        body { font-family:'DM Sans',sans-serif; background:black; color:white; }
-        input,textarea,select { font-family:'DM Sans',sans-serif; }
-        ::-webkit-scrollbar{width:4px;} ::-webkit-scrollbar-track{background:black;} ::-webkit-scrollbar-thumb{background:#e53e3e;}
-        select option { background:#1a1a1a; color:white; }
-      `}</style>
     </section>
   );
 }
@@ -256,23 +297,23 @@ function VenueCard({ venue, index, onClick }) {
         transition: `opacity 0.6s ease ${index * 0.15}s, transform 0.6s ease ${index * 0.15}s, border-color 0.3s, background 0.3s`,
       }}>
       <div style={{ height: 3, background: venue.color, width: hovered ? "100%" : "40%", transition: "width 0.4s ease" }} />
-      <div style={{ position: "absolute", top: 22, right: 20 }}>
+      <div style={{ position: "absolute", top: 20, right: 18 }}>
         <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#68d391", boxShadow: "0 0 8px #68d391" }} />
       </div>
-      <div style={{ padding: "32px 28px 28px" }}>
-        <h3 style={{ fontFamily: "'Bebas Neue', Impact, sans-serif", fontSize: 36, color: "white", letterSpacing: 1.5, marginBottom: 24, lineHeight: 1 }}>
+      <div style={{ padding: "28px 24px 24px" }}>
+        <h3 style={{ fontFamily: "'Bebas Neue', Impact, sans-serif", fontSize: 32, color: "white", letterSpacing: 1.5, marginBottom: 20, lineHeight: 1 }}>
           {venue.name}
         </h3>
-        <div style={{ marginBottom: 24 }}>
+        <div style={{ marginBottom: 20 }}>
           {venue.rooms.map(r => (
-            <div key={r.name} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+            <div key={r.name} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "9px 0", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
               <span style={{ color: "rgba(255,255,255,0.7)", fontSize: 14, fontWeight: 500 }}>{r.name}</span>
               <span style={{ color: "rgba(255,255,255,0.35)", fontSize: 12 }}>{r.capacity} คน</span>
             </div>
           ))}
         </div>
         <div style={{ display: "flex", justifyContent: "flex-end" }}>
-          <div style={{ background: hovered ? venue.color : "transparent", border: `1px solid ${hovered ? venue.color : "rgba(255,255,255,0.2)"}`, color: "white", fontSize: 11, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase", padding: "8px 18px", transition: "all 0.3s" }}>
+          <div style={{ background: hovered ? venue.color : "transparent", border: `1px solid ${hovered ? venue.color : "rgba(255,255,255,0.2)"}`, color: "white", fontSize: 11, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase", padding: "8px 16px", transition: "all 0.3s" }}>
             Book Now
           </div>
         </div>
@@ -285,28 +326,25 @@ function VenueCard({ venue, index, onClick }) {
 
 function FeaturedSpaces({ setActivePage, setSelectedVenue }) {
   return (
-    <section style={{ background: "black", padding: "120px 2rem" }}>
+    <section style={{ background: "black", padding: "80px 1.25rem" }}>
       <div style={{ maxWidth: 1280, margin: "0 auto" }}>
         <FadeUp>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 64, flexWrap: "wrap", gap: 16 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 48, flexWrap: "wrap", gap: 12 }}>
             <div>
-              <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
-                <div style={{ width: 32, height: 2, background: "#e53e3e" }} />
-                <span style={{ color: "#e53e3e", fontSize: 11, fontWeight: 700, letterSpacing: 4, textTransform: "uppercase" }}>Our Spaces</span>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+                <div style={{ width: 28, height: 2, background: "#e53e3e" }} />
+                <span style={{ color: "#e53e3e", fontSize: 10, fontWeight: 700, letterSpacing: 4, textTransform: "uppercase" }}>Our Spaces</span>
               </div>
-              <h2 style={{ fontFamily: "'Bebas Neue', Impact, sans-serif", fontSize: "clamp(40px,6vw,80px)", color: "white", lineHeight: 0.9, letterSpacing: -1 }}>
+              <h2 style={{ fontFamily: "'Bebas Neue', Impact, sans-serif", fontSize: "clamp(36px,6vw,72px)", color: "white", lineHeight: 0.9, letterSpacing: -1 }}>
                 FEATURED<br /><span style={{ color: "rgba(255,255,255,0.2)" }}>SPACES</span>
               </h2>
             </div>
-            <div style={{ textAlign: "right" }}>
-              <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 13, marginBottom: 8 }}>{VENUES.length} สถานที่</div>
-              <button onClick={() => setActivePage("spaces")} style={{ background: "none", border: "none", color: "#e53e3e", fontSize: 13, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase", cursor: "pointer", fontFamily: "inherit" }}>
-                View All →
-              </button>
-            </div>
+            <button onClick={() => setActivePage("spaces")} style={{ background: "none", border: "none", color: "#e53e3e", fontSize: 13, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase", cursor: "pointer", fontFamily: "inherit" }}>
+              View All →
+            </button>
           </div>
         </FadeUp>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 16 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 14 }}>
           {VENUES.map((v, i) => (
             <VenueCard key={v.id} venue={v} index={i} onClick={(venue) => { setSelectedVenue(venue); setActivePage("venue-detail"); }} />
           ))}
@@ -321,17 +359,17 @@ function FeaturedSpaces({ setActivePage, setSelectedVenue }) {
 function SpacesPage({ setActivePage, setSelectedVenue }) {
   return (
     <div style={{ background: "black", minHeight: "100vh", paddingTop: 80 }}>
-      <div style={{ background: "#0a0a0a", borderBottom: "1px solid rgba(255,255,255,0.06)", padding: "48px 2rem" }}>
+      <div style={{ background: "#0a0a0a", borderBottom: "1px solid rgba(255,255,255,0.06)", padding: "40px 1.25rem" }}>
         <div style={{ maxWidth: 1280, margin: "0 auto" }}>
           <FadeUp>
-            <h1 style={{ fontFamily: "'Bebas Neue', Impact, sans-serif", fontSize: "clamp(48px,8vw,96px)", color: "white", lineHeight: 0.9 }}>
+            <h1 style={{ fontFamily: "'Bebas Neue', Impact, sans-serif", fontSize: "clamp(40px,8vw,96px)", color: "white", lineHeight: 0.9 }}>
               ALL <span style={{ color: "#e53e3e" }}>SPACES</span>
             </h1>
           </FadeUp>
         </div>
       </div>
-      <div style={{ maxWidth: 1280, margin: "0 auto", padding: "48px 2rem" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(360px, 1fr))", gap: 16 }}>
+      <div style={{ maxWidth: 1280, margin: "0 auto", padding: "40px 1.25rem" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 14 }}>
           {VENUES.map((v, i) => (
             <VenueCard key={v.id} venue={v} index={i} onClick={(venue) => { setSelectedVenue(venue); setActivePage("venue-detail"); }} />
           ))}
@@ -348,7 +386,7 @@ function VenueDetail({ venue, setActivePage, onBookingSubmitted }) {
   const [date, setDate] = useState("");
   const [timeStart, setTimeStart] = useState("09:00");
   const [timeEnd, setTimeEnd] = useState("12:00");
-  const [name, setName] = useState("");
+  const [nickname, setNickname] = useState("");
   const [phone, setPhone] = useState("");
   const [team, setTeam] = useState("");
   const [notes, setNotes] = useState("");
@@ -357,8 +395,8 @@ function VenueDetail({ venue, setActivePage, onBookingSubmitted }) {
   const [error, setError] = useState("");
 
   const handleBook = async () => {
-    if (!date || !name || !team) {
-      setError("กรุณากรอก วันที่ ชื่อ-นามสกุล และเลือกทีม");
+    if (!date || !nickname || !team) {
+      setError("กรุณากรอก วันที่ ชื่อเล่น และเลือกทีม");
       return;
     }
     setSaving(true);
@@ -371,7 +409,7 @@ function VenueDetail({ venue, setActivePage, onBookingSubmitted }) {
       timeEnd,
       team,
       notes,
-      name,
+      name: nickname,
       phone,
     });
     setSaving(false);
@@ -385,18 +423,18 @@ function VenueDetail({ venue, setActivePage, onBookingSubmitted }) {
 
   if (submitted) {
     return (
-      <div style={{ background: "black", minHeight: "100vh", paddingTop: 80, display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <div style={{ textAlign: "center", padding: "0 2rem" }}>
-          <div style={{ fontSize: 64, marginBottom: 24 }}>🎉</div>
-          <h2 style={{ fontFamily: "'Bebas Neue', Impact, sans-serif", fontSize: 56, color: "white", marginBottom: 16 }}>
+      <div style={{ background: "black", minHeight: "100vh", paddingTop: 80, display: "flex", alignItems: "center", justifyContent: "center", padding: "80px 1.25rem 0" }}>
+        <div style={{ textAlign: "center" }}>
+          <div style={{ fontSize: 56, marginBottom: 20 }}>🎉</div>
+          <h2 style={{ fontFamily: "'Bebas Neue', Impact, sans-serif", fontSize: "clamp(36px,8vw,56px)", color: "white", marginBottom: 12 }}>
             BOOKING <span style={{ color: "#e53e3e" }}>SUBMITTED</span>
           </h2>
-          <p style={{ color: "rgba(255,255,255,0.5)", marginBottom: 32 }}>คำขอจองของคุณถูกบันทึกลง Google Sheets แล้ว</p>
-          <div style={{ display: "flex", gap: 16, justifyContent: "center" }}>
-            <button onClick={() => setActivePage("bookings")} style={{ background: "#e53e3e", color: "white", border: "none", padding: "14px 32px", fontWeight: 700, fontSize: 12, letterSpacing: 2, textTransform: "uppercase", cursor: "pointer", fontFamily: "inherit" }}>
+          <p style={{ color: "rgba(255,255,255,0.5)", marginBottom: 28, fontSize: 14 }}>คำขอจองของคุณถูกบันทึกลง Google Sheets แล้ว</p>
+          <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
+            <button onClick={() => setActivePage("bookings")} style={{ background: "#e53e3e", color: "white", border: "none", padding: "13px 28px", fontWeight: 700, fontSize: 12, letterSpacing: 2, textTransform: "uppercase", cursor: "pointer", fontFamily: "inherit" }}>
               Track Status
             </button>
-            <button onClick={() => setActivePage("spaces")} style={{ background: "transparent", color: "white", border: "1px solid rgba(255,255,255,0.2)", padding: "14px 32px", fontWeight: 700, fontSize: 12, letterSpacing: 2, textTransform: "uppercase", cursor: "pointer", fontFamily: "inherit" }}>
+            <button onClick={() => setActivePage("spaces")} style={{ background: "transparent", color: "white", border: "1px solid rgba(255,255,255,0.2)", padding: "13px 28px", fontWeight: 700, fontSize: 12, letterSpacing: 2, textTransform: "uppercase", cursor: "pointer", fontFamily: "inherit" }}>
               Browse More
             </button>
           </div>
@@ -405,31 +443,41 @@ function VenueDetail({ venue, setActivePage, onBookingSubmitted }) {
     );
   }
 
-  const inputStyle = { width: "100%", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", color: "white", padding: "10px 12px", fontSize: 14, outline: "none", colorScheme: "dark" };
-  const labelStyle = { display: "block", color: "rgba(255,255,255,0.4)", fontSize: 10, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase", marginBottom: 6 };
+  const inputStyle = {
+    width: "100%", background: "rgba(255,255,255,0.04)",
+    border: "1px solid rgba(255,255,255,0.1)", color: "white",
+    padding: "10px 12px", fontSize: 14, outline: "none", colorScheme: "dark",
+  };
+  const labelStyle = {
+    display: "block", color: "rgba(255,255,255,0.4)", fontSize: 10,
+    fontWeight: 700, letterSpacing: 2, textTransform: "uppercase", marginBottom: 6,
+  };
 
   return (
     <div style={{ background: "black", minHeight: "100vh", paddingTop: 64 }}>
-      <div style={{ background: `linear-gradient(135deg, ${venue.color}22, black)`, borderBottom: `1px solid ${venue.color}33`, padding: "64px 2rem 48px" }}>
+      {/* Hero band */}
+      <div style={{ background: `linear-gradient(135deg, ${venue.color}22, black)`, borderBottom: `1px solid ${venue.color}33`, padding: "48px 1.25rem 36px" }}>
         <div style={{ maxWidth: 1280, margin: "0 auto" }}>
-          <button onClick={() => setActivePage("spaces")} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.4)", fontSize: 12, letterSpacing: 2, textTransform: "uppercase", cursor: "pointer", fontFamily: "inherit", marginBottom: 24 }}>
-            ← Back to Spaces
+          <button onClick={() => setActivePage("spaces")} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.4)", fontSize: 11, letterSpacing: 2, textTransform: "uppercase", cursor: "pointer", fontFamily: "inherit", marginBottom: 20 }}>
+            ← Back
           </button>
-          <h1 style={{ fontFamily: "'Bebas Neue', Impact, sans-serif", fontSize: "clamp(48px,8vw,96px)", color: "white", lineHeight: 0.9 }}>
+          <h1 style={{ fontFamily: "'Bebas Neue', Impact, sans-serif", fontSize: "clamp(40px,8vw,96px)", color: "white", lineHeight: 0.9 }}>
             {venue.name}
           </h1>
         </div>
       </div>
 
-      <div style={{ maxWidth: 1280, margin: "0 auto", padding: "48px 2rem", display: "grid", gridTemplateColumns: "1fr 440px", gap: 48, alignItems: "start" }}>
+      {/* Content — stack vertically on mobile */}
+      <div style={{ maxWidth: 1280, margin: "0 auto", padding: "36px 1.25rem" }}>
+
         {/* Rooms */}
-        <div>
-          <h3 style={{ fontFamily: "'Bebas Neue', Impact, sans-serif", fontSize: 28, color: "white", letterSpacing: 1, marginBottom: 24 }}>Available Rooms</h3>
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        <div style={{ marginBottom: 32 }}>
+          <h3 style={{ fontFamily: "'Bebas Neue', Impact, sans-serif", fontSize: 24, color: "white", letterSpacing: 1, marginBottom: 16 }}>Available Rooms</h3>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {venue.rooms.map(r => (
               <div key={r.name} onClick={() => setSelectedRoom(r.name)} style={{
                 border: `1px solid ${selectedRoom === r.name ? venue.color : "rgba(255,255,255,0.08)"}`,
-                padding: "20px 24px", cursor: "pointer",
+                padding: "16px 20px", cursor: "pointer",
                 background: selectedRoom === r.name ? `${venue.color}11` : "transparent",
                 transition: "all 0.2s", display: "flex", justifyContent: "space-between", alignItems: "center",
               }}>
@@ -437,24 +485,24 @@ function VenueDetail({ venue, setActivePage, onBookingSubmitted }) {
                   <div style={{ color: "white", fontWeight: 600, marginBottom: 2 }}>{r.name}</div>
                   <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 12 }}>{r.capacity} คน</div>
                 </div>
-                {selectedRoom === r.name && <div style={{ width: 8, height: 8, borderRadius: "50%", background: venue.color }} />}
+                {selectedRoom === r.name && <div style={{ width: 8, height: 8, borderRadius: "50%", background: venue.color, flexShrink: 0 }} />}
               </div>
             ))}
           </div>
         </div>
 
         {/* Booking Form */}
-        <div style={{ background: "#0a0a0a", border: "1px solid rgba(255,255,255,0.08)", padding: 32, position: "sticky", top: 80 }}>
-          <h3 style={{ fontFamily: "'Bebas Neue', Impact, sans-serif", fontSize: 24, color: "white", marginBottom: 24 }}>Book This Space</h3>
+        <div style={{ background: "#0a0a0a", border: "1px solid rgba(255,255,255,0.08)", padding: "28px 24px" }}>
+          <h3 style={{ fontFamily: "'Bebas Neue', Impact, sans-serif", fontSize: 22, color: "white", marginBottom: 20 }}>Book This Space</h3>
 
           {/* วันที่ */}
-          <div style={{ marginBottom: 16 }}>
+          <div style={{ marginBottom: 14 }}>
             <label style={labelStyle}>วันที่</label>
             <input type="date" value={date} onChange={e => setDate(e.target.value)} style={inputStyle} />
           </div>
 
           {/* เวลา */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 14 }}>
             <div>
               <label style={labelStyle}>เวลาเริ่ม</label>
               <input type="time" value={timeStart} onChange={e => setTimeStart(e.target.value)} style={inputStyle} />
@@ -465,22 +513,22 @@ function VenueDetail({ venue, setActivePage, onBookingSubmitted }) {
             </div>
           </div>
 
-          {/* ชื่อ-นามสกุล */}
-          <div style={{ marginBottom: 16 }}>
-            <label style={labelStyle}>ชื่อ-นามสกุล</label>
-            <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="เช่น สมชาย ใจดี"
-              style={inputStyle} />
+          {/* ชื่อเล่น */}
+          <div style={{ marginBottom: 14 }}>
+            <label style={labelStyle}>ชื่อเล่น</label>
+            <input type="text" value={nickname} onChange={e => setNickname(e.target.value)}
+              placeholder="เช่น โอ๊ต, แบม, ปั้น" style={inputStyle} />
           </div>
 
           {/* เบอร์โทร */}
-          <div style={{ marginBottom: 16 }}>
+          <div style={{ marginBottom: 14 }}>
             <label style={labelStyle}>เบอร์โทรติดต่อ</label>
-            <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="เช่น 0812345678"
-              style={inputStyle} />
+            <input type="tel" value={phone} onChange={e => setPhone(e.target.value)}
+              placeholder="เช่น 0812345678" style={inputStyle} />
           </div>
 
-          {/* ทีม dropdown */}
-          <div style={{ marginBottom: 16 }}>
+          {/* ทีม */}
+          <div style={{ marginBottom: 14 }}>
             <label style={labelStyle}>ทีม</label>
             <select value={team} onChange={e => setTeam(e.target.value)} style={{
               ...inputStyle,
@@ -496,7 +544,7 @@ function VenueDetail({ venue, setActivePage, onBookingSubmitted }) {
           </div>
 
           {/* หมายเหตุ */}
-          <div style={{ marginBottom: 20 }}>
+          <div style={{ marginBottom: 18 }}>
             <label style={labelStyle}>หมายเหตุ</label>
             <textarea value={notes} onChange={e => setNotes(e.target.value)}
               placeholder="รายละเอียดเพิ่มเติม เช่น อุปกรณ์ที่ต้องการ..." rows={3}
@@ -504,17 +552,16 @@ function VenueDetail({ venue, setActivePage, onBookingSubmitted }) {
           </div>
 
           {error && (
-            <div style={{ color: "#fc8181", fontSize: 12, marginBottom: 16, padding: "8px 12px", background: "rgba(252,129,129,0.1)", border: "1px solid rgba(252,129,129,0.3)" }}>
+            <div style={{ color: "#fc8181", fontSize: 12, marginBottom: 14, padding: "8px 12px", background: "rgba(252,129,129,0.1)", border: "1px solid rgba(252,129,129,0.3)" }}>
               {error}
             </div>
           )}
 
           <button onClick={handleBook} disabled={saving} style={{
-            width: "100%",
-            background: saving ? "rgba(255,255,255,0.08)" : venue.color,
-            color: "white", border: "none", padding: "16px",
-            fontWeight: 700, fontSize: 13, letterSpacing: 2.5, textTransform: "uppercase",
-            cursor: saving ? "not-allowed" : "pointer", fontFamily: "inherit", transition: "opacity 0.2s",
+            width: "100%", background: saving ? "rgba(255,255,255,0.08)" : venue.color,
+            color: "white", border: "none", padding: "15px",
+            fontWeight: 700, fontSize: 13, letterSpacing: 2, textTransform: "uppercase",
+            cursor: saving ? "not-allowed" : "pointer", fontFamily: "inherit",
           }}>
             {saving ? "กำลังบันทึก..." : "Submit Booking Request"}
           </button>
@@ -526,7 +573,7 @@ function VenueDetail({ venue, setActivePage, onBookingSubmitted }) {
 
 // ─── BOOKINGS PAGE ────────────────────────────────────────────────────────────
 
-function BookingsPage({ bookings, setBookings, updateBookingStatus }) {
+function BookingsPage({ bookings, setBookings }) {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [loading, setLoading] = useState(true);
@@ -550,42 +597,42 @@ function BookingsPage({ bookings, setBookings, updateBookingStatus }) {
 
   return (
     <div style={{ background: "black", minHeight: "100vh", paddingTop: 80 }}>
-      <div style={{ background: "#0a0a0a", borderBottom: "1px solid rgba(255,255,255,0.06)", padding: "48px 2rem" }}>
+      <div style={{ background: "#0a0a0a", borderBottom: "1px solid rgba(255,255,255,0.06)", padding: "40px 1.25rem" }}>
         <div style={{ maxWidth: 1280, margin: "0 auto" }}>
           <FadeUp>
-            <h1 style={{ fontFamily: "'Bebas Neue', Impact, sans-serif", fontSize: "clamp(40px,7vw,80px)", color: "white", lineHeight: 0.9, marginBottom: 8 }}>
+            <h1 style={{ fontFamily: "'Bebas Neue', Impact, sans-serif", fontSize: "clamp(36px,7vw,72px)", color: "white", lineHeight: 0.9, marginBottom: 8 }}>
               BOOKING <span style={{ color: "#e53e3e" }}>TRACKER</span>
             </h1>
-            <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 14 }}>ติดตามสถานะการจองสถานที่ของทีมคุณ — ข้อมูลจาก Google Sheets จริงๆ</p>
+            <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 13 }}>ติดตามสถานะการจองสถานที่ของทีมคุณ</p>
           </FadeUp>
         </div>
       </div>
 
-      {/* Status filters */}
-      <div style={{ padding: "24px 2rem", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-        <div style={{ maxWidth: 1280, margin: "0 auto", display: "flex", gap: 10, flexWrap: "wrap" }}>
+      {/* Status filter — scrollable on mobile */}
+      <div style={{ padding: "20px 1.25rem", borderBottom: "1px solid rgba(255,255,255,0.06)", overflowX: "auto" }}>
+        <div style={{ display: "flex", gap: 8, minWidth: "max-content" }}>
           {[{ key: "All", label: "All", color: "#fff", icon: "📋" }, ...BOOKING_STATUSES].map(s => {
             const cnt = s.key === "All" ? bookings.length : bookings.filter(b => b.status === s.key).length;
             return (
               <button key={s.key} onClick={() => setStatusFilter(s.key)} style={{
                 background: statusFilter === s.key ? `${s.color}22` : "transparent",
                 border: `1px solid ${statusFilter === s.key ? s.color : "rgba(255,255,255,0.1)"}`,
-                color: s.color, padding: "8px 14px", fontSize: 11, fontWeight: 700,
+                color: s.color, padding: "7px 12px", fontSize: 10, fontWeight: 700,
                 letterSpacing: 1, textTransform: "uppercase", cursor: "pointer", fontFamily: "inherit",
-                display: "flex", alignItems: "center", gap: 6, transition: "all 0.2s",
+                display: "flex", alignItems: "center", gap: 5, transition: "all 0.2s", whiteSpace: "nowrap",
               }}>
-                <span>{s.icon}</span>{s.label} ({cnt})
+                {s.icon} {s.label} ({cnt})
               </button>
             );
           })}
         </div>
       </div>
 
-      <div style={{ maxWidth: 1280, margin: "0 auto", padding: "32px 2rem" }}>
-        <div style={{ marginBottom: 24 }}>
+      <div style={{ maxWidth: 1280, margin: "0 auto", padding: "24px 1.25rem" }}>
+        <div style={{ marginBottom: 20 }}>
           <input value={search} onChange={e => setSearch(e.target.value)}
-            placeholder="ค้นหาด้วย ID, สถานที่, ทีม หรือชื่อ..."
-            style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", color: "white", padding: "12px 16px", fontSize: 14, width: "100%", maxWidth: 400, outline: "none" }} />
+            placeholder="ค้นหาด้วย ID, สถานที่, ทีม หรือชื่อเล่น..."
+            style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", color: "white", padding: "11px 14px", fontSize: 14, width: "100%", maxWidth: 420, outline: "none" }} />
         </div>
 
         {loading ? (
@@ -594,39 +641,33 @@ function BookingsPage({ bookings, setBookings, updateBookingStatus }) {
             <div>กำลังโหลดข้อมูลจาก Google Sheets...</div>
           </div>
         ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {filtered.map((b, i) => {
               const statusObj = BOOKING_STATUSES.find(s => s.key === b.status) || BOOKING_STATUSES[0];
               return (
                 <FadeUp key={b.id || i} delay={i * 0.04}>
-                  <div style={{ background: "#0a0a0a", border: "1px solid rgba(255,255,255,0.07)", padding: "24px 28px", display: "grid", gridTemplateColumns: "90px 1fr auto auto", gap: 20, alignItems: "center" }}>
-                    <div style={{ fontFamily: "'Bebas Neue', Impact, sans-serif", fontSize: 18, color: "#e53e3e", letterSpacing: 1 }}>{b.id}</div>
-                    <div>
-                      <div style={{ color: "white", fontWeight: 600, marginBottom: 4 }}>
-                        {b.venue} — <span style={{ color: "rgba(255,255,255,0.5)", fontWeight: 400 }}>{b.room}</span>
+                  {/* Card — responsive wrap on mobile */}
+                  <div style={{ background: "#0a0a0a", border: "1px solid rgba(255,255,255,0.07)", padding: "20px 20px" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, flexWrap: "wrap" }}>
+                      {/* Left: ID + info */}
+                      <div style={{ flex: 1, minWidth: 200 }}>
+                        <div style={{ fontFamily: "'Bebas Neue', Impact, sans-serif", fontSize: 16, color: "#e53e3e", letterSpacing: 1, marginBottom: 6 }}>{b.id}</div>
+                        <div style={{ color: "white", fontWeight: 600, marginBottom: 3, fontSize: 14 }}>
+                          {b.venue} — <span style={{ color: "rgba(255,255,255,0.5)", fontWeight: 400 }}>{b.room}</span>
+                        </div>
+                        <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 12, marginBottom: 2 }}>
+                          {b.date} · {b.timeStart}–{b.timeEnd}
+                        </div>
+                        <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 12 }}>
+                          {b.team}{b.name ? ` · ${b.name}` : ""}{b.phone ? ` · ${b.phone}` : ""}
+                        </div>
+                        {b.notes && <div style={{ color: "rgba(255,255,255,0.3)", fontSize: 11, marginTop: 4, fontStyle: "italic" }}>{b.notes}</div>}
                       </div>
-                      <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 12, marginBottom: 2 }}>
-                        {b.date} · {b.timeStart}–{b.timeEnd}
+
+                      {/* Right: status badge only — no action buttons */}
+                      <div style={{ background: `${statusObj.color}18`, border: `1px solid ${statusObj.color}55`, color: statusObj.color, fontSize: 10, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase", padding: "6px 10px", display: "flex", alignItems: "center", gap: 5, whiteSpace: "nowrap", alignSelf: "flex-start" }}>
+                        {statusObj.icon} {statusObj.label}
                       </div>
-                      <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 12 }}>
-                        {b.team}{b.name ? ` · ${b.name}` : ""}{b.phone ? ` · ${b.phone}` : ""}
-                      </div>
-                      {b.notes && <div style={{ color: "rgba(255,255,255,0.3)", fontSize: 11, marginTop: 4, fontStyle: "italic" }}>{b.notes}</div>}
-                    </div>
-                    <div style={{ background: `${statusObj.color}18`, border: `1px solid ${statusObj.color}55`, color: statusObj.color, fontSize: 10, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase", padding: "6px 12px", display: "flex", alignItems: "center", gap: 6, whiteSpace: "nowrap" }}>
-                      {statusObj.icon} {statusObj.label}
-                    </div>
-                    <div style={{ display: "flex", gap: 8 }}>
-                      {b.status === "pending" && (
-                        <button onClick={() => updateBookingStatus(b.id, "confirmed")} style={{ background: "#68d39122", border: "1px solid #68d391", color: "#68d391", padding: "4px 10px", fontSize: 10, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", cursor: "pointer", fontFamily: "inherit" }}>
-                          Confirm
-                        </button>
-                      )}
-                      {(b.status === "pending" || b.status === "confirmed") && (
-                        <button onClick={() => updateBookingStatus(b.id, "cancelled")} style={{ background: "#fc818122", border: "1px solid #fc8181", color: "#fc8181", padding: "4px 10px", fontSize: 10, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", cursor: "pointer", fontFamily: "inherit" }}>
-                          Cancel
-                        </button>
-                      )}
                     </div>
                   </div>
                 </FadeUp>
@@ -635,7 +676,7 @@ function BookingsPage({ bookings, setBookings, updateBookingStatus }) {
             {filtered.length === 0 && (
               <div style={{ textAlign: "center", padding: "80px 0", color: "rgba(255,255,255,0.3)" }}>
                 <div style={{ fontSize: 48, marginBottom: 16 }}>📋</div>
-                <div style={{ fontFamily: "'Bebas Neue', Impact, sans-serif", fontSize: 24, letterSpacing: 2 }}>ไม่พบรายการจอง</div>
+                <div style={{ fontFamily: "'Bebas Neue', Impact, sans-serif", fontSize: 22, letterSpacing: 2 }}>ไม่พบรายการจอง</div>
               </div>
             )}
           </div>
@@ -649,25 +690,25 @@ function BookingsPage({ bookings, setBookings, updateBookingStatus }) {
 
 function Testimonials() {
   return (
-    <section style={{ background: "#050505", padding: "120px 2rem", borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+    <section style={{ background: "#050505", padding: "80px 1.25rem", borderTop: "1px solid rgba(255,255,255,0.05)" }}>
       <div style={{ maxWidth: 1280, margin: "0 auto" }}>
         <FadeUp>
-          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
-            <div style={{ width: 32, height: 2, background: "#e53e3e" }} />
-            <span style={{ color: "#e53e3e", fontSize: 11, fontWeight: 700, letterSpacing: 4, textTransform: "uppercase" }}>Testimonials</span>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+            <div style={{ width: 28, height: 2, background: "#e53e3e" }} />
+            <span style={{ color: "#e53e3e", fontSize: 10, fontWeight: 700, letterSpacing: 4, textTransform: "uppercase" }}>Testimonials</span>
           </div>
-          <h2 style={{ fontFamily: "'Bebas Neue', Impact, sans-serif", fontSize: "clamp(36px,6vw,72px)", color: "white", lineHeight: 0.9, marginBottom: 64 }}>
+          <h2 style={{ fontFamily: "'Bebas Neue', Impact, sans-serif", fontSize: "clamp(32px,6vw,64px)", color: "white", lineHeight: 0.9, marginBottom: 48 }}>
             WHAT THEY<br /><span style={{ color: "rgba(255,255,255,0.2)" }}>SAY ABOUT US</span>
           </h2>
         </FadeUp>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 1, background: "rgba(255,255,255,0.04)" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 1, background: "rgba(255,255,255,0.04)" }}>
           {TESTIMONIALS.map((t, i) => (
             <FadeUp key={t.name} delay={i * 0.1}>
-              <div style={{ background: "#050505", padding: 40 }}>
-                <div style={{ fontSize: 48, color: "#e53e3e", fontFamily: "Georgia, serif", lineHeight: 1, marginBottom: 20, opacity: 0.6 }}>"</div>
-                <p style={{ color: "rgba(255,255,255,0.65)", fontSize: 15, lineHeight: 1.8, marginBottom: 28, fontStyle: "italic" }}>{t.quote}</p>
+              <div style={{ background: "#050505", padding: "32px 28px" }}>
+                <div style={{ fontSize: 40, color: "#e53e3e", fontFamily: "Georgia, serif", lineHeight: 1, marginBottom: 16, opacity: 0.6 }}>"</div>
+                <p style={{ color: "rgba(255,255,255,0.65)", fontSize: 14, lineHeight: 1.8, marginBottom: 24, fontStyle: "italic" }}>{t.quote}</p>
                 <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                  <div style={{ width: 40, height: 40, borderRadius: "50%", background: "#e53e3e", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 13, color: "white", flexShrink: 0 }}>{t.avatar}</div>
+                  <div style={{ width: 38, height: 38, borderRadius: "50%", background: "#e53e3e", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 13, color: "white", flexShrink: 0 }}>{t.avatar}</div>
                   <div>
                     <div style={{ color: "white", fontWeight: 600, fontSize: 14 }}>{t.name}</div>
                     <div style={{ color: "rgba(255,255,255,0.35)", fontSize: 11 }}>{t.role}</div>
@@ -686,15 +727,16 @@ function Testimonials() {
 
 function Footer({ setActivePage }) {
   return (
-    <footer style={{ background: "black", borderTop: "1px solid rgba(255,255,255,0.06)", padding: "64px 2rem 32px" }}>
+    <footer style={{ background: "black", borderTop: "1px solid rgba(255,255,255,0.06)", padding: "48px 1.25rem 28px" }}>
       <div style={{ maxWidth: 1280, margin: "0 auto" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gap: 48, marginBottom: 48 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 36, marginBottom: 36 }}>
           <div>
-            <div style={{ fontFamily: "'Bebas Neue', Impact, sans-serif", fontSize: 22, color: "white", letterSpacing: 2, marginBottom: 16 }}>
-              TEDX <span style={{ color: "#e53e3e" }}>BANGKOK</span> YOUTH
+            <div style={{ fontFamily: "'Bebas Neue', Impact, sans-serif", fontSize: 20, letterSpacing: 2, marginBottom: 12 }}>
+              <span style={{ color: "#e53e3e" }}>TEDx</span>
+              <span style={{ color: "white" }}> Bangkok Youth</span>
             </div>
-            <p style={{ color: "rgba(255,255,255,0.35)", fontSize: 13, lineHeight: 1.8, maxWidth: 280 }}>
-              สถานที่สำหรับไอเดียที่จะเปลี่ยนโลก พื้นที่สำหรับผู้ที่กล้าคิด กล้าแสดงออก
+            <p style={{ color: "rgba(255,255,255,0.35)", fontSize: 13, lineHeight: 1.8 }}>
+              สถานที่สำหรับไอเดียที่จะเปลี่ยนโลก
             </p>
           </div>
           {[
@@ -702,19 +744,17 @@ function Footer({ setActivePage }) {
             { title: "Navigate", links: ["Home", "Bookings", "FAQ"] },
           ].map(col => (
             <div key={col.title}>
-              <div style={{ color: "rgba(255,255,255,0.3)", fontSize: 10, fontWeight: 700, letterSpacing: 3, textTransform: "uppercase", marginBottom: 20 }}>{col.title}</div>
+              <div style={{ color: "rgba(255,255,255,0.3)", fontSize: 10, fontWeight: 700, letterSpacing: 3, textTransform: "uppercase", marginBottom: 16 }}>{col.title}</div>
               {col.links.map(l => (
                 <div key={l} style={{ color: "rgba(255,255,255,0.5)", fontSize: 13, marginBottom: 10, cursor: "pointer" }}
                   onMouseEnter={e => e.target.style.color = "white"}
-                  onMouseLeave={e => e.target.style.color = "rgba(255,255,255,0.5)"}>
-                  {l}
-                </div>
+                  onMouseLeave={e => e.target.style.color = "rgba(255,255,255,0.5)"}>{l}</div>
               ))}
             </div>
           ))}
         </div>
-        <div style={{ borderTop: "1px solid rgba(255,255,255,0.05)", paddingTop: 24, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
-          <div style={{ color: "rgba(255,255,255,0.25)", fontSize: 12 }}>© 2026 TEDxBangkokYouth. All rights reserved.</div>
+        <div style={{ borderTop: "1px solid rgba(255,255,255,0.05)", paddingTop: 20, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
+          <div style={{ color: "rgba(255,255,255,0.25)", fontSize: 11 }}>© 2026 TEDxBangkokYouth. All rights reserved.</div>
           <div style={{ color: "rgba(255,255,255,0.15)", fontSize: 10, letterSpacing: 2, textTransform: "uppercase" }}>Ideas Worth Spreading</div>
         </div>
       </div>
@@ -726,15 +766,15 @@ function Footer({ setActivePage }) {
 
 function FaqPage() {
   return (
-    <div style={{ background: "black", minHeight: "100vh", padding: "120px 2rem 80px" }}>
+    <div style={{ background: "black", minHeight: "100vh", padding: "100px 1.25rem 60px" }}>
       <div style={{ maxWidth: 800, margin: "0 auto" }}>
         <FadeUp>
-          <h1 style={{ fontFamily: "'Bebas Neue', Impact, sans-serif", fontSize: 64, color: "white", marginBottom: 48 }}>FAQ</h1>
+          <h1 style={{ fontFamily: "'Bebas Neue', Impact, sans-serif", fontSize: "clamp(48px,8vw,64px)", color: "white", marginBottom: 40 }}>FAQ</h1>
         </FadeUp>
         {FAQS.map(([q, a]) => (
           <FadeUp key={q}>
-            <div style={{ borderBottom: "1px solid rgba(255,255,255,0.07)", paddingBottom: 24, marginBottom: 24 }}>
-              <div style={{ color: "white", fontWeight: 600, marginBottom: 8 }}>{q}</div>
+            <div style={{ borderBottom: "1px solid rgba(255,255,255,0.07)", paddingBottom: 20, marginBottom: 20 }}>
+              <div style={{ color: "white", fontWeight: 600, marginBottom: 8, fontSize: 15 }}>{q}</div>
               <div style={{ color: "rgba(255,255,255,0.5)", fontSize: 14, lineHeight: 1.7 }}>{a}</div>
             </div>
           </FadeUp>
@@ -750,11 +790,6 @@ export default function App() {
   const [activePage, setActivePage] = useState("home");
   const [selectedVenue, setSelectedVenue] = useState(null);
   const [bookings, setBookings] = useState([]);
-
-  const updateBookingStatus = async (id, status) => {
-    await apiUpdateStatus(id, status);
-    setBookings(prev => prev.map(b => b.id === id ? { ...b, status } : b));
-  };
 
   const onBookingSubmitted = () => {
     apiGetBookings().then(data => { if (data.length > 0) setBookings(data); });
@@ -779,11 +814,11 @@ export default function App() {
           ? <VenueDetail venue={selectedVenue} setActivePage={setActivePage} onBookingSubmitted={onBookingSubmitted} />
           : <SpacesPage setActivePage={setActivePage} setSelectedVenue={setSelectedVenue} />;
       case "bookings":
-        return <BookingsPage bookings={bookings} setBookings={setBookings} updateBookingStatus={updateBookingStatus} />;
+        return <BookingsPage bookings={bookings} setBookings={setBookings} />;
       case "community":
         return (
-          <div style={{ background: "black", minHeight: "100vh", paddingTop: 120, display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <h1 style={{ fontFamily: "'Bebas Neue', Impact, sans-serif", fontSize: 64, color: "white" }}>
+          <div style={{ background: "black", minHeight: "100vh", paddingTop: 120, display: "flex", alignItems: "center", justifyContent: "center", padding: "120px 1.25rem 0" }}>
+            <h1 style={{ fontFamily: "'Bebas Neue', Impact, sans-serif", fontSize: "clamp(40px,8vw,64px)", color: "white", textAlign: "center" }}>
               COMMUNITY <span style={{ color: "#e53e3e" }}>COMING SOON</span>
             </h1>
           </div>
