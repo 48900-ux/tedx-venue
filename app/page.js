@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from "react";
 
 // ─── GOOGLE SHEETS API ─────────────────────────────────────────────────────────
 
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw6Yl-fHdBO2LvmSNx10Hzi2D3FfBRbke7VH6XQxDhFMc9v9cpMn4uPVoBNqSS6Fb7J/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwHrYnQFz50sFEiodZ9IfiIyKwwJ1KpFgnC27I9pkuq7vO1f-iz9P095PfTYkMQuue5/exec";
 
 async function apiGetBookings() {
   try {
@@ -269,7 +269,7 @@ function Hero({ setActivePage }) {
           </button>
         </div>
         <div style={{ display: "flex", gap: 36, justifyContent: "center", marginTop: 60, animation: "fadeSlideUp 0.9s ease 0.5s both", flexWrap: "wrap" }}>
-          {[{ n: count, label: "Spaces Available" }, { n: "12+", label: "Youth Speakers" }, { n: "100%", label: "Safe Space" }].map(({ n, label }) => (
+          {[{ n: count, label: "Spaces Available" }, { n: "500+", label: "Events Hosted" }, { n: "99%", label: "Satisfaction Rate" }].map(({ n, label }) => (
             <div key={label} style={{ textAlign: "center" }}>
               <div style={{ fontFamily: "'Bebas Neue', Impact, sans-serif", fontSize: 32, color: "white", lineHeight: 1 }}>{n}</div>
               <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 10, letterSpacing: 2, textTransform: "uppercase", marginTop: 4 }}>{label}</div>
@@ -389,6 +389,7 @@ function VenueDetail({ venue, setActivePage, onBookingSubmitted }) {
   const [nickname, setNickname] = useState("");
   const [phone, setPhone] = useState("");
   const [team, setTeam] = useState("");
+  const [topic, setTopic] = useState("");
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -408,6 +409,7 @@ function VenueDetail({ venue, setActivePage, onBookingSubmitted }) {
       timeStart,
       timeEnd,
       team,
+      topic,
       notes,
       name: nickname,
       phone,
@@ -543,6 +545,22 @@ function VenueDetail({ venue, setActivePage, onBookingSubmitted }) {
             </select>
           </div>
 
+          {/* วัตถุประสงค์ */}
+          <div style={{ marginBottom: 14 }}>
+            <label style={labelStyle}>วัตถุประสงค์การจอง / Topic</label>
+            <select value={topic} onChange={e => setTopic(e.target.value)} style={{
+              ...inputStyle,
+              cursor: "pointer",
+              color: topic ? "white" : "rgba(255,255,255,0.3)",
+              background: "#111",
+            }}>
+              <option value="" disabled style={{ color: "rgba(255,255,255,0.3)" }}>เลือกวัตถุประสงค์</option>
+              {["ประชุมทีม", "Workshop", "ถ่ายทำ / Content", "Rehearsal", "Brainstorm", "อบรม / Training", "อื่นๆ"].map(t => (
+                <option key={t} value={t}>{t}</option>
+              ))}
+            </select>
+          </div>
+
           {/* หมายเหตุ */}
           <div style={{ marginBottom: 18 }}>
             <label style={labelStyle}>หมายเหตุ</label>
@@ -661,6 +679,7 @@ function BookingsPage({ bookings, setBookings }) {
                         <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 12 }}>
                           {b.team}{b.name ? ` · ${b.name}` : ""}{b.phone ? ` · ${b.phone}` : ""}
                         </div>
+                        {b.topic && <div style={{ color: "rgba(255,255,255,0.35)", fontSize: 12, marginTop: 2 }}>📌 {b.topic}</div>}
                         {b.notes && <div style={{ color: "rgba(255,255,255,0.3)", fontSize: 11, marginTop: 4, fontStyle: "italic" }}>{b.notes}</div>}
                       </div>
 
@@ -740,15 +759,30 @@ function Footer({ setActivePage }) {
             </p>
           </div>
           {[
-            { title: "Spaces", links: ["C2 Cafe", "Event Place Asoke"] },
-            { title: "Navigate", links: ["Home", "Bookings", "FAQ"] },
+            {
+              title: "Spaces",
+              links: [
+                { label: "C2 Cafe", page: "spaces" },
+                { label: "Event Place Asoke", page: "spaces" },
+              ],
+            },
+            {
+              title: "Navigate",
+              links: [
+                { label: "Home", page: "home" },
+                { label: "Bookings", page: "bookings" },
+                { label: "FAQ", page: "faq" },
+              ],
+            },
           ].map(col => (
             <div key={col.title}>
               <div style={{ color: "rgba(255,255,255,0.3)", fontSize: 10, fontWeight: 700, letterSpacing: 3, textTransform: "uppercase", marginBottom: 16 }}>{col.title}</div>
               {col.links.map(l => (
-                <div key={l} style={{ color: "rgba(255,255,255,0.5)", fontSize: 13, marginBottom: 10, cursor: "pointer" }}
+                <div key={l.label}
+                  onClick={() => setActivePage(l.page)}
+                  style={{ color: "rgba(255,255,255,0.5)", fontSize: 13, marginBottom: 10, cursor: "pointer", transition: "color 0.2s" }}
                   onMouseEnter={e => e.target.style.color = "white"}
-                  onMouseLeave={e => e.target.style.color = "rgba(255,255,255,0.5)"}>{l}</div>
+                  onMouseLeave={e => e.target.style.color = "rgba(255,255,255,0.5)"}>{l.label}</div>
               ))}
             </div>
           ))}
