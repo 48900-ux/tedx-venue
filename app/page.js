@@ -396,8 +396,8 @@ function VenueDetail({ venue, setActivePage, onBookingSubmitted }) {
   const [error, setError] = useState("");
 
   const handleBook = async () => {
-    if (!date || !nickname || !team) {
-      setError("กรุณากรอก วันที่ ชื่อเล่น และเลือกทีม");
+    if (!date || !nickname || !team || !notes) {
+  setError("กรุณากรอก วันที่ ชื่อเล่น ทีม และหมายเหตุ");
       return;
     }
     setSaving(true);
@@ -546,28 +546,33 @@ function VenueDetail({ venue, setActivePage, onBookingSubmitted }) {
           </div>
 
           {/* วัตถุประสงค์ */}
-          <div style={{ marginBottom: 14 }}>
-            <label style={labelStyle}>วัตถุประสงค์การจอง / Topic</label>
-            <select value={topic} onChange={e => setTopic(e.target.value)} style={{
-              ...inputStyle,
-              cursor: "pointer",
-              color: topic ? "white" : "rgba(255,255,255,0.3)",
-              background: "#111",
-            }}>
-              <option value="" disabled style={{ color: "rgba(255,255,255,0.3)" }}>เลือกวัตถุประสงค์</option>
-              {["ประชุมทีม", "Workshop", "ถ่ายทำ / Content", "Rehearsal", "Brainstorm", "อบรม / Training", "อื่นๆ"].map(t => (
-                <option key={t} value={t}>{t}</option>
-              ))}
-            </select>
-          </div>
+<div style={{ marginBottom: 14 }}>
+  <label style={labelStyle}>วัตถุประสงค์การจอง / Topic</label>
+  <input
+    type="text"
+    value={topic}
+    onChange={e => setTopic(e.target.value)}
+    placeholder="Ex. ใช้งานสำหรับ Workshop (Curator 101)"
+    style={inputStyle}
+  />
+</div>
 
           {/* หมายเหตุ */}
-          <div style={{ marginBottom: 18 }}>
-            <label style={labelStyle}>หมายเหตุ</label>
-            <textarea value={notes} onChange={e => setNotes(e.target.value)}
-              placeholder="รายละเอียดเพิ่มเติม เช่น อุปกรณ์ที่ต้องการ..." rows={3}
-              style={{ ...inputStyle, resize: "vertical" }} />
-          </div>
+<div style={{ marginBottom: 18 }}>
+  <label style={labelStyle}>
+    หมายเหตุ <span style={{ color: "#e53e3e" }}>*</span>
+  </label>
+  <textarea
+    value={notes}
+    onChange={e => setNotes(e.target.value)}
+    placeholder={"รูปแบบห้องที่ต้องการ: (เช่น แบบ classroom / circle / theater)\nของที่ต้องการยืม: (เช่น projector, whiteboard, ไมค์)"}
+    rows={4}
+    style={{ ...inputStyle, resize: "vertical" }}
+  />
+  <div style={{ color: "rgba(255,255,255,0.3)", fontSize: 11, marginTop: 5 }}>
+    * กรุณาระบุรูปแบบห้องและของที่ต้องการยืม
+  </div>
+</div>
 
           {error && (
             <div style={{ color: "#fc8181", fontSize: 12, marginBottom: 14, padding: "8px 12px", background: "rgba(252,129,129,0.1)", border: "1px solid rgba(252,129,129,0.3)" }}>
