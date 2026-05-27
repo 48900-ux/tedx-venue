@@ -646,15 +646,18 @@ function BookingModal({ venue, room, onClose, onSubmitted }) {
           </select>
         </div>
         <div style={{ marginBottom: 14 }}>
-          <label style={labelStyle}>วัตถุประสงค์ / Topic</label>
-          <select value={topic} onChange={e => setTopic(e.target.value)} style={{ ...inputStyle, cursor: "pointer", color: topic ? "white" : "rgba(255,255,255,0.3)", background: "#111" }}>
-            <option value="" disabled>เลือกวัตถุประสงค์</option>
-            {["ประชุมทีม", "Workshop", "ถ่ายทำ / Content", "Rehearsal", "Brainstorm", "อบรม / Training", "อื่นๆ"].map(t => <option key={t} value={t}>{t}</option>)}
-          </select>
-        </div>
+  <label style={labelStyle}>วัตถุประสงค์ / Topic</label>
+  <input
+    type="text"
+    value={topic}
+    onChange={e => setTopic(e.target.value)}
+    placeholder="เช่น ประชุมทีม, Workshop, Rehearsal..."
+    style={inputStyle}
+  />
+</div>
         <div style={{ marginBottom: 20 }}>
           <label style={labelStyle}>หมายเหตุ</label>
-          <textarea value={notes} onChange={e => setNotes(e.target.value)} placeholder="รายละเอียดเพิ่มเติม..." rows={3} style={{ ...inputStyle, resize: "vertical" }} />
+          <textarea value={notes} onChange={e => setNotes(e.target.value)} placeholder="รูปแบบห้อง , อุปกรณ์ที่ต้องการยืม และ ข้อมูลอื่นๆ..." rows={3} style={{ ...inputStyle, resize: "vertical" }} />
         </div>
 
         {error && <div style={{ color: "#fc8181", fontSize: 12, marginBottom: 14, padding: "8px 12px", background: "rgba(252,129,129,0.1)", border: "1px solid rgba(252,129,129,0.3)" }}>{error}</div>}
