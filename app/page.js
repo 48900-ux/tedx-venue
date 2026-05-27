@@ -3,16 +3,14 @@ import { useState, useEffect, useRef } from "react";
 
 // ─── GOOGLE SHEETS API ─────────────────────────────────────────────────────────
 
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwHrYnQFz50sFEiodZ9IfiIyKwwJ1KpFgnC27I9pkuq7vO1f-iz9P095PfTYkMQuue5/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw6Yl-fHdBO2LvmSNx10Hzi2D3FfBRbke7VH6XQxDhFMc9v9cpMn4uPVoBNqSS6Fb7J/exec";
 
 async function apiGetBookings() {
   try {
     const res = await fetch(`${SCRIPT_URL}?action=getAll`);
     const json = await res.json();
     return json.data || [];
-  } catch {
-    return [];
-  }
+  } catch { return []; }
 }
 
 async function apiCreateBooking(data) {
@@ -22,12 +20,11 @@ async function apiCreateBooking(data) {
       body: JSON.stringify({ action: "create", ...data }),
     });
     return await res.json();
-  } catch {
-    return { error: "Failed" };
-  }
+  } catch { return { error: "Failed" }; }
 }
 
 // ─── DATA ──────────────────────────────────────────────────────────────────────
+// ✏️ แก้รายละเอียดสถานที่ตรงนี้ได้เลย
 
 const VENUES = [
   {
@@ -35,20 +32,68 @@ const VENUES = [
     name: "C2 Cafe",
     color: "#276749",
     available: true,
+    // ✏️ ที่อยู่สถานที่
+    address: "https://share.google/N1Q5w823Ah7Pl9WIF",
+    // ✏️ รายละเอียดภาพรวมของสถานที่
+    description: "C2 Cafe & Community เป็นพื้นที่ให้เช่าจัดกิจกรรม เวิร์กชอป ประชุม หรือคลาสเรียน บรรยากาศอบอุ่น มีทั้งห้องขนาดเล็กและขนาดใหญ่ รองรับผู้เข้าร่วมสูงสุด 30 คน พร้อมอุปกรณ์พื้นฐานสำหรับการใช้งาน เช่น โปรเจคเตอร์ ไมค์ โต๊ะ เก้าอี้ และที่จอดรถสำหรับผู้จองล่วงหน้า",
     rooms: [
-      { name: "ห้องเล็ก", capacity: 20 },
-      { name: "ห้องใหญ่", capacity: 30 },
-    ],
-  },
-  {
-    id: 2,
-    name: "Event Place Asoke",
-    color: "#553c9a",
-    available: true,
-    rooms: [
-      { name: "ห้องเล็ก", capacity: 10 },
-      { name: "ห้องกลาง", capacity: 40 },
-      { name: "ห้องใหญ่", capacity: 120 },
+      {
+        name: "ห้องเล็ก",
+        capacity: 20,
+        // ✏️ รายละเอียดห้อง
+        description: "ห้องขนาด 35 ตร.ม รองรับคนได้สูงสุด 20 คน",
+        // ✏️ อุปกรณ์ที่มีให้
+        equipment: [
+          "เบาะนั่งสมาธิ 30 ใบ",
+          "โต๊ะขาวเหล็ก 4 ที่นั่ง 6 ตัว",
+          "เก้าอี้ขาว 24 ตัว",
+          "โปรเจกเตอร์(มีลำโพงในตัว)",
+          "ไมค์ 2 ตัว + ลำโพง",
+          "กระดาษ Flip Chart ขนาด A0 8 แผ่น",
+          "สีช็อล์ค 4 กล่อง",
+        ],
+        // ✏️ เงื่อนไขการจอง
+        bookingInfo: [
+          "จองล่วงหน้าอย่างน้อย 7 วัน",
+          "หากจ้องการยกเลิกกรุณาแจ้งล่วงหน้าอย่างน้อย 7 วัน",
+          "หากนำรถยนต์มากรุณาแจ้งเลขทะเบียนและกรอกเลขทะเบียนมาในช่องหมายเหตุ",
+          "รองรับสูงสุด 20 คน",
+        ],
+        // ✏️ รูปภาพ — ใส่ URL รูปจริงตรงนี้
+        // วิธีเพิ่มรูป: อัพโหลดรูปขึ้น Google Drive แล้ว copy link มาใส่
+        // หรือใช้ URL รูปจากเว็บอื่นก็ได้
+        photos: [
+          "https://i.postimg.cc/cLCbz65m/IMG-4584.jpg",
+          "https://i.postimg.cc/Dw0MNmY5/IMG-4585.jpg",
+        ],
+      },
+      {
+        name: "ห้องใหญ่",
+        capacity: 30,
+        description: "ห้องขนาด 55 ตร.ม รองรับคนได้สูงสุด 30 คน",
+        equipment: [
+          "เบาะนั่งสมาธิ 30 ใบ",
+          "โต๊ะขาวเหล็ก 4 ที่นั่ง 6 ตัว",
+          "เก้าอี้ขาว 24 ตัว",
+          "โปรเจกเตอร์(มีลำโพงในตัว)",
+          "ไมค์ 2 ตัว + ลำโพง",
+          "กระดาษ Flip Chart ขนาด A0 8 แผ่น",
+          "สีช็อล์ค 4 กล่อง",
+        ],
+        bookingInfo: [
+          "จองล่วงหน้าอย่างน้อย 7 วัน",
+          "หากจ้องการยกเลิกกรุณาแจ้งล่วงหน้าอย่างน้อย 7 วัน",
+          "หากนำรถยนต์มากรุณาแจ้งเลขทะเบียนและกรอกเลขทะเบียนมาในช่องหมายเหตุ",
+          "รองรับสูงสุด 30 คน",
+        ],
+        photos: [
+          "https://i.postimg.cc/mgk5nh63/EFACDB7B-A2AA-4B19-B421-119A0C0713BA.jpg",
+          "https://i.postimg.cc/P5JR7NFm/BF471081-B58D-42B8-A000-BCB0653738A2.jpg",
+          "https://i.postimg.cc/8PtYwLw6/5D295C40-25B0-455B-B8F5-7D19AF7B9B1E.jpg",
+          "https://i.postimg.cc/y8xbGWrm/E75C2B29-99F7-475F-8493-B074281C0648.jpg",
+          "https://i.postimg.cc/0yjB4rHD/8B561258-8251-484D-A781-230187152EB5.jpg",
+        ],
+      },
     ],
   },
 ];
@@ -56,24 +101,9 @@ const VENUES = [
 const TEAMS = ["Advisor", "PM", "S&F", "Commu", "Leader Buddy", "Acty", "C&C", "C&T", "In-Hall", "Operation"];
 
 const TESTIMONIALS = [
-  {
-    name: "Auto",
-    role: "Curator, TEDxBangkokYouth 2025",
-    quote: "ในฐานะ Curator การมีสถานที่ในการ workshop เป็นประสบการณ์ที่ดีมากครับ",
-    avatar: "A",
-  },
-  {
-    name: "Bamboo",
-    role: "Speaker, TEDxBangkokYouth 2025",
-    quote: "ระบบจองใช้งานง่ายมาก ติดตาม status ได้ตลอด ทีมงานตอบกลับเร็ว ประทับใจมาก",
-    avatar: "B",
-  },
-  {
-    name: "Pun",
-    role: "Curator Lead, TEDxBangkokYouth 2025",
-    quote: "Inspiration Hub is exactly what a modern workshop space should feel like. Creative, warm, and perfectly equipped.",
-    avatar: "P",
-  },
+  { name: "Auto", role: "Curator, TEDxBangkokYouth 2025", quote: "ในฐานะ Curator การมีสถานที่ในการ workshop เป็นประสบการณ์ที่ดีมากครับ", avatar: "A" },
+  { name: "Bamboo", role: "Speaker, TEDxBangkokYouth 2025", quote: "ระบบจองใช้งานง่ายมาก ติดตาม status ได้ตลอด ทีมงานตอบกลับเร็ว ประทับใจมาก", avatar: "B" },
+  { name: "Pun", role: "Curator Lead, TEDxBangkokYouth 2025", quote: "บรรยากาศดีมาก เหมาะกับการระดมความคิด ทีมชอบทุกคนเลยครับ", avatar: "P" },
 ];
 
 const BOOKING_STATUSES = [
@@ -114,8 +144,63 @@ function FadeUp({ children, delay = 0 }) {
       opacity: inView ? 1 : 0,
       transform: inView ? "translateY(0)" : "translateY(32px)",
       transition: `opacity 0.7s ease ${delay}s, transform 0.7s ease ${delay}s`,
-    }}>
-      {children}
+    }}>{children}</div>
+  );
+}
+
+// ─── PHOTO GALLERY ────────────────────────────────────────────────────────────
+
+function PhotoGallery({ photos, color }) {
+  const [current, setCurrent] = useState(0);
+  const [lightbox, setLightbox] = useState(false);
+
+  return (
+    <div>
+      {/* Main photo */}
+      <div
+        onClick={() => setLightbox(true)}
+        style={{ position: "relative", aspectRatio: "16/9", background: "#111", cursor: "zoom-in", overflow: "hidden", marginBottom: 8 }}
+      >
+        <img
+          src={photos[current]}
+          alt={`รูปที่ ${current + 1}`}
+          style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+          onError={e => { e.target.style.background = "#1a1a1a"; }}
+        />
+        <div style={{ position: "absolute", bottom: 10, right: 12, background: "rgba(0,0,0,0.6)", color: "white", fontSize: 11, padding: "3px 8px", borderRadius: 4 }}>
+          {current + 1} / {photos.length}
+        </div>
+        <div style={{ position: "absolute", top: "50%", left: 0, right: 0, display: "flex", justifyContent: "space-between", padding: "0 8px", transform: "translateY(-50%)", pointerEvents: "none" }}>
+          <button onClick={e => { e.stopPropagation(); setCurrent(c => (c - 1 + photos.length) % photos.length); }}
+            style={{ background: "rgba(0,0,0,0.5)", border: "none", color: "white", fontSize: 18, padding: "6px 12px", cursor: "pointer", pointerEvents: "all" }}>‹</button>
+          <button onClick={e => { e.stopPropagation(); setCurrent(c => (c + 1) % photos.length); }}
+            style={{ background: "rgba(0,0,0,0.5)", border: "none", color: "white", fontSize: 18, padding: "6px 12px", cursor: "pointer", pointerEvents: "all" }}>›</button>
+        </div>
+      </div>
+
+      {/* Thumbnails */}
+      <div style={{ display: "flex", gap: 6 }}>
+        {photos.map((p, i) => (
+          <div key={i} onClick={() => setCurrent(i)} style={{
+            flex: 1, aspectRatio: "16/9", cursor: "pointer", overflow: "hidden",
+            border: `2px solid ${i === current ? color : "transparent"}`,
+            transition: "border-color 0.2s", opacity: i === current ? 1 : 0.5,
+          }}>
+            <img src={p} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+          </div>
+        ))}
+      </div>
+
+      {/* Lightbox */}
+      {lightbox && (
+        <div
+          onClick={() => setLightbox(false)}
+          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.95)", zIndex: 999, display: "flex", alignItems: "center", justifyContent: "center", padding: "1rem" }}
+        >
+          <img src={photos[current]} alt="" style={{ maxWidth: "100%", maxHeight: "90vh", objectFit: "contain" }} />
+          <button onClick={() => setLightbox(false)} style={{ position: "absolute", top: 16, right: 20, background: "none", border: "none", color: "white", fontSize: 28, cursor: "pointer" }}>✕</button>
+        </div>
+      )}
     </div>
   );
 }
@@ -133,10 +218,7 @@ function Navbar({ activePage, setActivePage }) {
     return () => window.removeEventListener("scroll", fn);
   }, []);
 
-  const handleNav = (page) => {
-    setActivePage(page);
-    setMenuOpen(false);
-  };
+  const handleNav = (page) => { setActivePage(page); setMenuOpen(false); };
 
   return (
     <>
@@ -145,12 +227,9 @@ function Navbar({ activePage, setActivePage }) {
         background: scrolled || menuOpen ? "rgba(0,0,0,0.97)" : "transparent",
         backdropFilter: scrolled ? "blur(16px)" : "none",
         borderBottom: scrolled ? "1px solid rgba(255,255,255,0.07)" : "1px solid transparent",
-        padding: "0 1.25rem",
-        transition: "background 0.4s, border-color 0.4s",
+        padding: "0 1.25rem", transition: "background 0.4s, border-color 0.4s",
       }}>
         <div style={{ maxWidth: 1280, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", height: 64 }}>
-
-          {/* ── Logo: TEDx แดง / Bangkok Youth ขาว */}
           <button onClick={() => handleNav("home")} style={{ background: "none", border: "none", cursor: "pointer" }}>
             <span style={{ fontFamily: "'Bebas Neue', Impact, sans-serif", fontSize: 20, letterSpacing: 2 }}>
               <span style={{ color: "#e53e3e" }}>TEDx</span>
@@ -158,8 +237,8 @@ function Navbar({ activePage, setActivePage }) {
             </span>
           </button>
 
-          {/* ── Desktop links (hidden on mobile) */}
-          <div style={{ display: "flex", gap: 28, alignItems: "center" }} className="desktop-nav">
+          {/* Desktop */}
+          <div className="desktop-nav" style={{ display: "flex", gap: 28, alignItems: "center" }}>
             {links.map(l => (
               <button key={l} onClick={() => handleNav(l.toLowerCase())} style={{
                 background: "none", border: "none", cursor: "pointer",
@@ -175,19 +254,16 @@ function Navbar({ activePage, setActivePage }) {
             }}>Book a Space</button>
           </div>
 
-          {/* ── Hamburger (mobile only) */}
-          <button
-            onClick={() => setMenuOpen(o => !o)}
-            className="hamburger"
-            style={{ background: "none", border: "none", cursor: "pointer", padding: 8, display: "none", flexDirection: "column", gap: 5 }}
-          >
+          {/* Hamburger */}
+          <button onClick={() => setMenuOpen(o => !o)} className="hamburger"
+            style={{ background: "none", border: "none", cursor: "pointer", padding: 8, display: "none", flexDirection: "column", gap: 5 }}>
             <span style={{ display: "block", width: 24, height: 2, background: "white", transition: "all 0.3s", transform: menuOpen ? "rotate(45deg) translate(5px,5px)" : "none" }} />
             <span style={{ display: "block", width: 24, height: 2, background: "white", opacity: menuOpen ? 0 : 1, transition: "all 0.3s" }} />
             <span style={{ display: "block", width: 24, height: 2, background: "white", transition: "all 0.3s", transform: menuOpen ? "rotate(-45deg) translate(5px,-5px)" : "none" }} />
           </button>
         </div>
 
-        {/* ── Mobile dropdown menu */}
+        {/* Mobile menu */}
         {menuOpen && (
           <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", padding: "12px 0 20px" }}>
             {links.map(l => (
@@ -211,15 +287,15 @@ function Navbar({ activePage, setActivePage }) {
 
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap');
-        @keyframes fadeSlideUp { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }
-        * { box-sizing:border-box; margin:0; padding:0; }
-        body { font-family:'DM Sans',sans-serif; background:black; color:white; }
-        input,textarea,select { font-family:'DM Sans',sans-serif; }
+        @keyframes fadeSlideUp { from{opacity:0;transform:translateY(24px);}to{opacity:1;transform:translateY(0);} }
+        *{box-sizing:border-box;margin:0;padding:0;}
+        body{font-family:'DM Sans',sans-serif;background:black;color:white;}
+        input,textarea,select{font-family:'DM Sans',sans-serif;}
         ::-webkit-scrollbar{width:4px;} ::-webkit-scrollbar-track{background:black;} ::-webkit-scrollbar-thumb{background:#e53e3e;}
-        select option { background:#1a1a1a; color:white; }
-        @media (max-width: 768px) {
-          .desktop-nav { display: none !important; }
-          .hamburger { display: flex !important; }
+        select option{background:#1a1a1a;color:white;}
+        @media(max-width:768px){
+          .desktop-nav{display:none!important;}
+          .hamburger{display:flex!important;}
         }
       `}</style>
     </>
@@ -231,7 +307,7 @@ function Navbar({ activePage, setActivePage }) {
 function Hero({ setActivePage }) {
   const [count, setCount] = useState(0);
   useEffect(() => {
-    const t = setInterval(() => setCount(c => c < 2 ? c + 1 : 2), 300);
+    const t = setInterval(() => setCount(c => c < VENUES.length ? c + 1 : VENUES.length), 300);
     return () => clearInterval(t);
   }, []);
 
@@ -242,7 +318,6 @@ function Hero({ setActivePage }) {
       <div style={{ position: "absolute", bottom: -20, left: "50%", transform: "translateX(-50%)", fontFamily: "'Bebas Neue', Impact, sans-serif", fontSize: "clamp(60px,15vw,240px)", color: "rgba(255,255,255,0.03)", letterSpacing: -4, whiteSpace: "nowrap", userSelect: "none", zIndex: 1 }}>
         IDEAS HAPPEN HERE
       </div>
-
       <div style={{ position: "relative", zIndex: 3, textAlign: "center", padding: "0 1.5rem", maxWidth: 900, width: "100%" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12, marginBottom: 24 }}>
           <div style={{ width: 32, height: 2, background: "#e53e3e" }} />
@@ -301,9 +376,12 @@ function VenueCard({ venue, index, onClick }) {
         <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#68d391", boxShadow: "0 0 8px #68d391" }} />
       </div>
       <div style={{ padding: "28px 24px 24px" }}>
-        <h3 style={{ fontFamily: "'Bebas Neue', Impact, sans-serif", fontSize: 32, color: "white", letterSpacing: 1.5, marginBottom: 20, lineHeight: 1 }}>
+        <h3 style={{ fontFamily: "'Bebas Neue', Impact, sans-serif", fontSize: 32, color: "white", letterSpacing: 1.5, marginBottom: 8, lineHeight: 1 }}>
           {venue.name}
         </h3>
+        {venue.address && (
+          <p style={{ color: "rgba(255,255,255,0.35)", fontSize: 12, marginBottom: 16 }}>📍 {venue.address}</p>
+        )}
         <div style={{ marginBottom: 20 }}>
           {venue.rooms.map(r => (
             <div key={r.name} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "9px 0", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
@@ -314,7 +392,7 @@ function VenueCard({ venue, index, onClick }) {
         </div>
         <div style={{ display: "flex", justifyContent: "flex-end" }}>
           <div style={{ background: hovered ? venue.color : "transparent", border: `1px solid ${hovered ? venue.color : "rgba(255,255,255,0.2)"}`, color: "white", fontSize: 11, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase", padding: "8px 16px", transition: "all 0.3s" }}>
-            Book Now
+            ดูรายละเอียด →
           </div>
         </div>
       </div>
@@ -322,7 +400,7 @@ function VenueCard({ venue, index, onClick }) {
   );
 }
 
-// ─── FEATURED SPACES ──────────────────────────────────────────────────────────
+// ─── FEATURED / SPACES PAGE ───────────────────────────────────────────────────
 
 function FeaturedSpaces({ setActivePage, setSelectedVenue }) {
   return (
@@ -354,8 +432,6 @@ function FeaturedSpaces({ setActivePage, setSelectedVenue }) {
   );
 }
 
-// ─── SPACES PAGE ──────────────────────────────────────────────────────────────
-
 function SpacesPage({ setActivePage, setSelectedVenue }) {
   return (
     <div style={{ background: "black", minHeight: "100vh", paddingTop: 80 }}>
@@ -382,7 +458,128 @@ function SpacesPage({ setActivePage, setSelectedVenue }) {
 // ─── VENUE DETAIL ─────────────────────────────────────────────────────────────
 
 function VenueDetail({ venue, setActivePage, onBookingSubmitted }) {
-  const [selectedRoom, setSelectedRoom] = useState(venue.rooms[0].name);
+  const [activeRoom, setActiveRoom] = useState(0);
+  const [showBooking, setShowBooking] = useState(false);
+
+  const room = venue.rooms[activeRoom];
+
+  return (
+    <div style={{ background: "black", minHeight: "100vh", paddingTop: 64 }}>
+      {/* Hero */}
+      <div style={{ background: `linear-gradient(135deg, ${venue.color}22, black)`, borderBottom: `1px solid ${venue.color}33`, padding: "48px 1.25rem 32px" }}>
+        <div style={{ maxWidth: 1280, margin: "0 auto" }}>
+          <button onClick={() => setActivePage("spaces")} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.4)", fontSize: 11, letterSpacing: 2, textTransform: "uppercase", cursor: "pointer", fontFamily: "inherit", marginBottom: 16 }}>
+            ← Back
+          </button>
+          <h1 style={{ fontFamily: "'Bebas Neue', Impact, sans-serif", fontSize: "clamp(40px,8vw,96px)", color: "white", lineHeight: 0.9, marginBottom: 8 }}>
+            {venue.name}
+          </h1>
+          {venue.address && <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 13 }}>📍 {venue.address}</p>}
+          {venue.description && <p style={{ color: "rgba(255,255,255,0.55)", fontSize: 14, marginTop: 8, maxWidth: 600, lineHeight: 1.7 }}>{venue.description}</p>}
+        </div>
+      </div>
+
+      <div style={{ maxWidth: 1280, margin: "0 auto", padding: "32px 1.25rem" }}>
+
+        {/* Room tabs */}
+        <div style={{ display: "flex", gap: 8, marginBottom: 28, flexWrap: "wrap" }}>
+          {venue.rooms.map((r, i) => (
+            <button key={r.name} onClick={() => setActiveRoom(i)} style={{
+              background: activeRoom === i ? venue.color : "transparent",
+              border: `1px solid ${activeRoom === i ? venue.color : "rgba(255,255,255,0.2)"}`,
+              color: "white", padding: "10px 20px", fontWeight: 700, fontSize: 13,
+              cursor: "pointer", fontFamily: "inherit", transition: "all 0.2s",
+            }}>
+              {r.name} <span style={{ opacity: 0.7, fontWeight: 400 }}>({r.capacity} คน)</span>
+            </button>
+          ))}
+        </div>
+
+        {/* Room detail */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 24 }}>
+
+          {/* Photos */}
+          {room.photos && room.photos.length > 0 && (
+            <FadeUp>
+              <PhotoGallery photos={room.photos} color={venue.color} />
+            </FadeUp>
+          )}
+
+          {/* Info grid */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 16 }}>
+
+            {/* Room description */}
+            {room.description && (
+              <FadeUp>
+                <div style={{ background: "#0a0a0a", border: "1px solid rgba(255,255,255,0.07)", padding: 24 }}>
+                  <div style={{ color: "#e53e3e", fontSize: 10, fontWeight: 700, letterSpacing: 3, textTransform: "uppercase", marginBottom: 12 }}>รายละเอียด</div>
+                  <p style={{ color: "rgba(255,255,255,0.65)", fontSize: 14, lineHeight: 1.8 }}>{room.description}</p>
+                </div>
+              </FadeUp>
+            )}
+
+            {/* Equipment */}
+            {room.equipment && (
+              <FadeUp delay={0.1}>
+                <div style={{ background: "#0a0a0a", border: "1px solid rgba(255,255,255,0.07)", padding: 24 }}>
+                  <div style={{ color: "#e53e3e", fontSize: 10, fontWeight: 700, letterSpacing: 3, textTransform: "uppercase", marginBottom: 12 }}>อุปกรณ์ที่มีให้</div>
+                  {room.equipment.map(eq => (
+                    <div key={eq} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 0", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                      <span style={{ color: venue.color, fontSize: 14 }}>✓</span>
+                      <span style={{ color: "rgba(255,255,255,0.7)", fontSize: 14 }}>{eq}</span>
+                    </div>
+                  ))}
+                </div>
+              </FadeUp>
+            )}
+
+            {/* Booking info */}
+            {room.bookingInfo && (
+              <FadeUp delay={0.15}>
+                <div style={{ background: "#0a0a0a", border: "1px solid rgba(255,255,255,0.07)", padding: 24 }}>
+                  <div style={{ color: "#e53e3e", fontSize: 10, fontWeight: 700, letterSpacing: 3, textTransform: "uppercase", marginBottom: 12 }}>ข้อมูลการจอง</div>
+                  {room.bookingInfo.map(info => (
+                    <div key={info} style={{ display: "flex", alignItems: "flex-start", gap: 8, padding: "6px 0", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                      <span style={{ color: "rgba(255,255,255,0.3)", fontSize: 14, flexShrink: 0 }}>•</span>
+                      <span style={{ color: "rgba(255,255,255,0.7)", fontSize: 14, lineHeight: 1.5 }}>{info}</span>
+                    </div>
+                  ))}
+                </div>
+              </FadeUp>
+            )}
+          </div>
+
+          {/* Book button */}
+          <FadeUp delay={0.2}>
+            <button
+              onClick={() => setShowBooking(true)}
+              style={{
+                width: "100%", background: venue.color, color: "white", border: "none",
+                padding: "18px", fontWeight: 700, fontSize: 14, letterSpacing: 2.5,
+                textTransform: "uppercase", cursor: "pointer", fontFamily: "inherit",
+              }}>
+              จองห้องนี้ — {room.name}
+            </button>
+          </FadeUp>
+        </div>
+      </div>
+
+      {/* Booking form modal */}
+      {showBooking && (
+        <BookingModal
+          venue={venue}
+          room={room}
+          onClose={() => setShowBooking(false)}
+          onSubmitted={() => { setShowBooking(false); onBookingSubmitted(); setActivePage("bookings"); }}
+        />
+      )}
+    </div>
+  );
+}
+
+// ─── BOOKING MODAL ────────────────────────────────────────────────────────────
+
+function BookingModal({ venue, room, onClose, onSubmitted }) {
   const [date, setDate] = useState("");
   const [timeStart, setTimeStart] = useState("09:00");
   const [timeEnd, setTimeEnd] = useState("12:00");
@@ -392,203 +589,83 @@ function VenueDetail({ venue, setActivePage, onBookingSubmitted }) {
   const [topic, setTopic] = useState("");
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
 
   const handleBook = async () => {
-    if (!date || !nickname || !team || !notes) {
-  setError("กรุณากรอก วันที่ ชื่อเล่น ทีม และหมายเหตุ");
-      return;
-    }
+    if (!date || !nickname || !team) { setError("กรุณากรอก วันที่ ชื่อเล่น และเลือกทีม"); return; }
     setSaving(true);
     setError("");
-    const result = await apiCreateBooking({
-      venue: venue.name,
-      room: selectedRoom,
-      date,
-      timeStart,
-      timeEnd,
-      team,
-      topic,
-      notes,
-      name: nickname,
-      phone,
-    });
+    const result = await apiCreateBooking({ venue: venue.name, room: room.name, date, timeStart, timeEnd, team, topic, notes, name: nickname, phone });
     setSaving(false);
-    if (result.success) {
-      onBookingSubmitted();
-      setSubmitted(true);
-    } else {
-      setError("เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง");
-    }
+    if (result.success) onSubmitted();
+    else setError("เกิดข้อผิดพลาด กรุณาลองใหม่");
   };
 
-  if (submitted) {
-    return (
-      <div style={{ background: "black", minHeight: "100vh", paddingTop: 80, display: "flex", alignItems: "center", justifyContent: "center", padding: "80px 1.25rem 0" }}>
-        <div style={{ textAlign: "center" }}>
-          <div style={{ fontSize: 56, marginBottom: 20 }}>🎉</div>
-          <h2 style={{ fontFamily: "'Bebas Neue', Impact, sans-serif", fontSize: "clamp(36px,8vw,56px)", color: "white", marginBottom: 12 }}>
-            BOOKING <span style={{ color: "#e53e3e" }}>SUBMITTED</span>
-          </h2>
-          <p style={{ color: "rgba(255,255,255,0.5)", marginBottom: 28, fontSize: 14 }}>คำขอจองของคุณถูกบันทึกลง Google Sheets แล้ว</p>
-          <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
-            <button onClick={() => setActivePage("bookings")} style={{ background: "#e53e3e", color: "white", border: "none", padding: "13px 28px", fontWeight: 700, fontSize: 12, letterSpacing: 2, textTransform: "uppercase", cursor: "pointer", fontFamily: "inherit" }}>
-              Track Status
-            </button>
-            <button onClick={() => setActivePage("spaces")} style={{ background: "transparent", color: "white", border: "1px solid rgba(255,255,255,0.2)", padding: "13px 28px", fontWeight: 700, fontSize: 12, letterSpacing: 2, textTransform: "uppercase", cursor: "pointer", fontFamily: "inherit" }}>
-              Browse More
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  const inputStyle = {
-    width: "100%", background: "rgba(255,255,255,0.04)",
-    border: "1px solid rgba(255,255,255,0.1)", color: "white",
-    padding: "10px 12px", fontSize: 14, outline: "none", colorScheme: "dark",
-  };
-  const labelStyle = {
-    display: "block", color: "rgba(255,255,255,0.4)", fontSize: 10,
-    fontWeight: 700, letterSpacing: 2, textTransform: "uppercase", marginBottom: 6,
-  };
+  const inputStyle = { width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "white", padding: "10px 12px", fontSize: 14, outline: "none", colorScheme: "dark" };
+  const labelStyle = { display: "block", color: "rgba(255,255,255,0.4)", fontSize: 10, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase", marginBottom: 6 };
 
   return (
-    <div style={{ background: "black", minHeight: "100vh", paddingTop: 64 }}>
-      {/* Hero band */}
-      <div style={{ background: `linear-gradient(135deg, ${venue.color}22, black)`, borderBottom: `1px solid ${venue.color}33`, padding: "48px 1.25rem 36px" }}>
-        <div style={{ maxWidth: 1280, margin: "0 auto" }}>
-          <button onClick={() => setActivePage("spaces")} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.4)", fontSize: 11, letterSpacing: 2, textTransform: "uppercase", cursor: "pointer", fontFamily: "inherit", marginBottom: 20 }}>
-            ← Back
-          </button>
-          <h1 style={{ fontFamily: "'Bebas Neue', Impact, sans-serif", fontSize: "clamp(40px,8vw,96px)", color: "white", lineHeight: 0.9 }}>
-            {venue.name}
-          </h1>
-        </div>
-      </div>
-
-      {/* Content — stack vertically on mobile */}
-      <div style={{ maxWidth: 1280, margin: "0 auto", padding: "36px 1.25rem" }}>
-
-        {/* Rooms */}
-        <div style={{ marginBottom: 32 }}>
-          <h3 style={{ fontFamily: "'Bebas Neue', Impact, sans-serif", fontSize: 24, color: "white", letterSpacing: 1, marginBottom: 16 }}>Available Rooms</h3>
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            {venue.rooms.map(r => (
-              <div key={r.name} onClick={() => setSelectedRoom(r.name)} style={{
-                border: `1px solid ${selectedRoom === r.name ? venue.color : "rgba(255,255,255,0.08)"}`,
-                padding: "16px 20px", cursor: "pointer",
-                background: selectedRoom === r.name ? `${venue.color}11` : "transparent",
-                transition: "all 0.2s", display: "flex", justifyContent: "space-between", alignItems: "center",
-              }}>
-                <div>
-                  <div style={{ color: "white", fontWeight: 600, marginBottom: 2 }}>{r.name}</div>
-                  <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 12 }}>{r.capacity} คน</div>
-                </div>
-                {selectedRoom === r.name && <div style={{ width: 8, height: 8, borderRadius: "50%", background: venue.color, flexShrink: 0 }} />}
-              </div>
-            ))}
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 200, display: "flex", alignItems: "flex-end", justifyContent: "center" }}
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
+      <div style={{ background: "#0d0d0d", border: "1px solid rgba(255,255,255,0.1)", borderBottom: "none", width: "100%", maxWidth: 560, maxHeight: "90vh", overflowY: "auto", padding: "28px 24px 32px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+          <div>
+            <div style={{ fontFamily: "'Bebas Neue', Impact, sans-serif", fontSize: 22, color: "white" }}>Book This Space</div>
+            <div style={{ color: venue.color, fontSize: 13, marginTop: 2 }}>{venue.name} — {room.name}</div>
           </div>
+          <button onClick={onClose} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.4)", fontSize: 22, cursor: "pointer" }}>✕</button>
         </div>
 
-        {/* Booking Form */}
-        <div style={{ background: "#0a0a0a", border: "1px solid rgba(255,255,255,0.08)", padding: "28px 24px" }}>
-          <h3 style={{ fontFamily: "'Bebas Neue', Impact, sans-serif", fontSize: 22, color: "white", marginBottom: 20 }}>Book This Space</h3>
-
-          {/* วันที่ */}
-          <div style={{ marginBottom: 14 }}>
-            <label style={labelStyle}>วันที่</label>
-            <input type="date" value={date} onChange={e => setDate(e.target.value)} style={inputStyle} />
-          </div>
-
-          {/* เวลา */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 14 }}>
-            <div>
-              <label style={labelStyle}>เวลาเริ่ม</label>
-              <input type="time" value={timeStart} onChange={e => setTimeStart(e.target.value)} style={inputStyle} />
-            </div>
-            <div>
-              <label style={labelStyle}>เวลาสิ้นสุด</label>
-              <input type="time" value={timeEnd} onChange={e => setTimeEnd(e.target.value)} style={inputStyle} />
-            </div>
-          </div>
-
-          {/* ชื่อเล่น */}
-          <div style={{ marginBottom: 14 }}>
-            <label style={labelStyle}>ชื่อเล่น</label>
-            <input type="text" value={nickname} onChange={e => setNickname(e.target.value)}
-              placeholder="เช่น โอ๊ต, แบม, ปั้น" style={inputStyle} />
-          </div>
-
-          {/* เบอร์โทร */}
-          <div style={{ marginBottom: 14 }}>
-            <label style={labelStyle}>เบอร์โทรติดต่อ</label>
-            <input type="tel" value={phone} onChange={e => setPhone(e.target.value)}
-              placeholder="เช่น 0812345678" style={inputStyle} />
-          </div>
-
-          {/* ทีม */}
-          <div style={{ marginBottom: 14 }}>
-            <label style={labelStyle}>ทีม</label>
-            <select value={team} onChange={e => setTeam(e.target.value)} style={{
-              ...inputStyle,
-              cursor: "pointer",
-              color: team ? "white" : "rgba(255,255,255,0.3)",
-              background: "#111",
-            }}>
-              <option value="" disabled style={{ color: "rgba(255,255,255,0.3)" }}>เลือกทีม</option>
-              {TEAMS.map(t => (
-                <option key={t} value={t}>{t}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* วัตถุประสงค์ */}
-<div style={{ marginBottom: 14 }}>
-  <label style={labelStyle}>วัตถุประสงค์การจอง / Topic</label>
-  <input
-    type="text"
-    value={topic}
-    onChange={e => setTopic(e.target.value)}
-    placeholder="Ex. ใช้งานสำหรับ Workshop (Curator 101)"
-    style={inputStyle}
-  />
-</div>
-
-          {/* หมายเหตุ */}
-<div style={{ marginBottom: 18 }}>
-  <label style={labelStyle}>
-    หมายเหตุ <span style={{ color: "#e53e3e" }}>*</span>
-  </label>
-  <textarea
-    value={notes}
-    onChange={e => setNotes(e.target.value)}
-    placeholder={"รูปแบบห้องที่ต้องการ: (เช่น แบบ classroom / circle / theater)\nของที่ต้องการยืม: (เช่น projector, whiteboard, ไมค์)"}
-    rows={4}
-    style={{ ...inputStyle, resize: "vertical" }}
-  />
-  <div style={{ color: "rgba(255,255,255,0.3)", fontSize: 11, marginTop: 5 }}>
-    * กรุณาระบุรูปแบบห้องและของที่ต้องการยืม
-  </div>
-</div>
-
-          {error && (
-            <div style={{ color: "#fc8181", fontSize: 12, marginBottom: 14, padding: "8px 12px", background: "rgba(252,129,129,0.1)", border: "1px solid rgba(252,129,129,0.3)" }}>
-              {error}
-            </div>
-          )}
-
-          <button onClick={handleBook} disabled={saving} style={{
-            width: "100%", background: saving ? "rgba(255,255,255,0.08)" : venue.color,
-            color: "white", border: "none", padding: "15px",
-            fontWeight: 700, fontSize: 13, letterSpacing: 2, textTransform: "uppercase",
-            cursor: saving ? "not-allowed" : "pointer", fontFamily: "inherit",
-          }}>
-            {saving ? "กำลังบันทึก..." : "Submit Booking Request"}
-          </button>
+        <div style={{ marginBottom: 14 }}>
+          <label style={labelStyle}>วันที่</label>
+          <input type="date" value={date} onChange={e => setDate(e.target.value)} style={inputStyle} />
         </div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 14 }}>
+          <div>
+            <label style={labelStyle}>เวลาเริ่ม</label>
+            <input type="time" value={timeStart} onChange={e => setTimeStart(e.target.value)} style={inputStyle} />
+          </div>
+          <div>
+            <label style={labelStyle}>เวลาสิ้นสุด</label>
+            <input type="time" value={timeEnd} onChange={e => setTimeEnd(e.target.value)} style={inputStyle} />
+          </div>
+        </div>
+        <div style={{ marginBottom: 14 }}>
+          <label style={labelStyle}>ชื่อเล่น</label>
+          <input type="text" value={nickname} onChange={e => setNickname(e.target.value)} placeholder="เช่น โอ๊ต, แบม, ปั้น" style={inputStyle} />
+        </div>
+        <div style={{ marginBottom: 14 }}>
+          <label style={labelStyle}>เบอร์โทรติดต่อ</label>
+          <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="เช่น 0812345678" style={inputStyle} />
+        </div>
+        <div style={{ marginBottom: 14 }}>
+          <label style={labelStyle}>ทีม</label>
+          <select value={team} onChange={e => setTeam(e.target.value)} style={{ ...inputStyle, cursor: "pointer", color: team ? "white" : "rgba(255,255,255,0.3)", background: "#111" }}>
+            <option value="" disabled>เลือกทีม</option>
+            {TEAMS.map(t => <option key={t} value={t}>{t}</option>)}
+          </select>
+        </div>
+        <div style={{ marginBottom: 14 }}>
+          <label style={labelStyle}>วัตถุประสงค์ / Topic</label>
+          <select value={topic} onChange={e => setTopic(e.target.value)} style={{ ...inputStyle, cursor: "pointer", color: topic ? "white" : "rgba(255,255,255,0.3)", background: "#111" }}>
+            <option value="" disabled>เลือกวัตถุประสงค์</option>
+            {["ประชุมทีม", "Workshop", "ถ่ายทำ / Content", "Rehearsal", "Brainstorm", "อบรม / Training", "อื่นๆ"].map(t => <option key={t} value={t}>{t}</option>)}
+          </select>
+        </div>
+        <div style={{ marginBottom: 20 }}>
+          <label style={labelStyle}>หมายเหตุ</label>
+          <textarea value={notes} onChange={e => setNotes(e.target.value)} placeholder="รายละเอียดเพิ่มเติม..." rows={3} style={{ ...inputStyle, resize: "vertical" }} />
+        </div>
+
+        {error && <div style={{ color: "#fc8181", fontSize: 12, marginBottom: 14, padding: "8px 12px", background: "rgba(252,129,129,0.1)", border: "1px solid rgba(252,129,129,0.3)" }}>{error}</div>}
+
+        <button onClick={handleBook} disabled={saving} style={{
+          width: "100%", background: saving ? "rgba(255,255,255,0.08)" : venue.color,
+          color: "white", border: "none", padding: "15px", fontWeight: 700, fontSize: 13,
+          letterSpacing: 2, textTransform: "uppercase", cursor: saving ? "not-allowed" : "pointer", fontFamily: "inherit",
+        }}>
+          {saving ? "กำลังบันทึก..." : "Submit Booking Request"}
+        </button>
       </div>
     </div>
   );
@@ -603,9 +680,7 @@ function BookingsPage({ bookings, setBookings }) {
 
   useEffect(() => {
     setLoading(true);
-    apiGetBookings()
-      .then(data => { if (data.length > 0) setBookings(data); })
-      .finally(() => setLoading(false));
+    apiGetBookings().then(data => { if (data.length > 0) setBookings(data); }).finally(() => setLoading(false));
   }, []);
 
   const filtered = bookings.filter(b => {
@@ -630,8 +705,6 @@ function BookingsPage({ bookings, setBookings }) {
           </FadeUp>
         </div>
       </div>
-
-      {/* Status filter — scrollable on mobile */}
       <div style={{ padding: "20px 1.25rem", borderBottom: "1px solid rgba(255,255,255,0.06)", overflowX: "auto" }}>
         <div style={{ display: "flex", gap: 8, minWidth: "max-content" }}>
           {[{ key: "All", label: "All", color: "#fff", icon: "📋" }, ...BOOKING_STATUSES].map(s => {
@@ -642,7 +715,7 @@ function BookingsPage({ bookings, setBookings }) {
                 border: `1px solid ${statusFilter === s.key ? s.color : "rgba(255,255,255,0.1)"}`,
                 color: s.color, padding: "7px 12px", fontSize: 10, fontWeight: 700,
                 letterSpacing: 1, textTransform: "uppercase", cursor: "pointer", fontFamily: "inherit",
-                display: "flex", alignItems: "center", gap: 5, transition: "all 0.2s", whiteSpace: "nowrap",
+                display: "flex", alignItems: "center", gap: 5, whiteSpace: "nowrap",
               }}>
                 {s.icon} {s.label} ({cnt})
               </button>
@@ -650,14 +723,11 @@ function BookingsPage({ bookings, setBookings }) {
           })}
         </div>
       </div>
-
       <div style={{ maxWidth: 1280, margin: "0 auto", padding: "24px 1.25rem" }}>
         <div style={{ marginBottom: 20 }}>
-          <input value={search} onChange={e => setSearch(e.target.value)}
-            placeholder="ค้นหาด้วย ID, สถานที่, ทีม หรือชื่อเล่น..."
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="ค้นหาด้วย ID, สถานที่, ทีม หรือชื่อเล่น..."
             style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", color: "white", padding: "11px 14px", fontSize: 14, width: "100%", maxWidth: 420, outline: "none" }} />
         </div>
-
         {loading ? (
           <div style={{ textAlign: "center", padding: "80px 0", color: "rgba(255,255,255,0.3)" }}>
             <div style={{ fontSize: 32, marginBottom: 12 }}>⏳</div>
@@ -669,26 +739,20 @@ function BookingsPage({ bookings, setBookings }) {
               const statusObj = BOOKING_STATUSES.find(s => s.key === b.status) || BOOKING_STATUSES[0];
               return (
                 <FadeUp key={b.id || i} delay={i * 0.04}>
-                  {/* Card — responsive wrap on mobile */}
-                  <div style={{ background: "#0a0a0a", border: "1px solid rgba(255,255,255,0.07)", padding: "20px 20px" }}>
+                  <div style={{ background: "#0a0a0a", border: "1px solid rgba(255,255,255,0.07)", padding: "20px" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, flexWrap: "wrap" }}>
-                      {/* Left: ID + info */}
                       <div style={{ flex: 1, minWidth: 200 }}>
                         <div style={{ fontFamily: "'Bebas Neue', Impact, sans-serif", fontSize: 16, color: "#e53e3e", letterSpacing: 1, marginBottom: 6 }}>{b.id}</div>
                         <div style={{ color: "white", fontWeight: 600, marginBottom: 3, fontSize: 14 }}>
                           {b.venue} — <span style={{ color: "rgba(255,255,255,0.5)", fontWeight: 400 }}>{b.room}</span>
                         </div>
-                        <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 12, marginBottom: 2 }}>
-                          {b.date} · {b.timeStart}–{b.timeEnd}
-                        </div>
+                        <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 12, marginBottom: 2 }}>{b.date} · {b.timeStart}–{b.timeEnd}</div>
                         <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 12 }}>
                           {b.team}{b.name ? ` · ${b.name}` : ""}{b.phone ? ` · ${b.phone}` : ""}
                         </div>
                         {b.topic && <div style={{ color: "rgba(255,255,255,0.35)", fontSize: 12, marginTop: 2 }}>📌 {b.topic}</div>}
                         {b.notes && <div style={{ color: "rgba(255,255,255,0.3)", fontSize: 11, marginTop: 4, fontStyle: "italic" }}>{b.notes}</div>}
                       </div>
-
-                      {/* Right: status badge only — no action buttons */}
                       <div style={{ background: `${statusObj.color}18`, border: `1px solid ${statusObj.color}55`, color: statusObj.color, fontSize: 10, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase", padding: "6px 10px", display: "flex", alignItems: "center", gap: 5, whiteSpace: "nowrap", alignSelf: "flex-start" }}>
                         {statusObj.icon} {statusObj.label}
                       </div>
@@ -759,32 +823,16 @@ function Footer({ setActivePage }) {
               <span style={{ color: "#e53e3e" }}>TEDx</span>
               <span style={{ color: "white" }}> Bangkok Youth</span>
             </div>
-            <p style={{ color: "rgba(255,255,255,0.35)", fontSize: 13, lineHeight: 1.8 }}>
-              สถานที่สำหรับไอเดียที่จะเปลี่ยนโลก
-            </p>
+            <p style={{ color: "rgba(255,255,255,0.35)", fontSize: 13, lineHeight: 1.8 }}>สถานที่สำหรับไอเดียที่จะเปลี่ยนโลก</p>
           </div>
           {[
-            {
-              title: "Spaces",
-              links: [
-                { label: "C2 Cafe", page: "spaces" },
-                { label: "Event Place Asoke", page: "spaces" },
-              ],
-            },
-            {
-              title: "Navigate",
-              links: [
-                { label: "Home", page: "home" },
-                { label: "Bookings", page: "bookings" },
-                { label: "FAQ", page: "faq" },
-              ],
-            },
+            { title: "Spaces", links: [{ label: "C2 Cafe", page: "spaces" }] },
+            { title: "Navigate", links: [{ label: "Home", page: "home" }, { label: "Bookings", page: "bookings" }, { label: "FAQ", page: "faq" }] },
           ].map(col => (
             <div key={col.title}>
               <div style={{ color: "rgba(255,255,255,0.3)", fontSize: 10, fontWeight: 700, letterSpacing: 3, textTransform: "uppercase", marginBottom: 16 }}>{col.title}</div>
               {col.links.map(l => (
-                <div key={l.label}
-                  onClick={() => setActivePage(l.page)}
+                <div key={l.label} onClick={() => setActivePage(l.page)}
                   style={{ color: "rgba(255,255,255,0.5)", fontSize: 13, marginBottom: 10, cursor: "pointer", transition: "color 0.2s" }}
                   onMouseEnter={e => e.target.style.color = "white"}
                   onMouseLeave={e => e.target.style.color = "rgba(255,255,255,0.5)"}>{l.label}</div>
@@ -801,15 +849,13 @@ function Footer({ setActivePage }) {
   );
 }
 
-// ─── FAQ PAGE ─────────────────────────────────────────────────────────────────
+// ─── FAQ ──────────────────────────────────────────────────────────────────────
 
 function FaqPage() {
   return (
     <div style={{ background: "black", minHeight: "100vh", padding: "100px 1.25rem 60px" }}>
       <div style={{ maxWidth: 800, margin: "0 auto" }}>
-        <FadeUp>
-          <h1 style={{ fontFamily: "'Bebas Neue', Impact, sans-serif", fontSize: "clamp(48px,8vw,64px)", color: "white", marginBottom: 40 }}>FAQ</h1>
-        </FadeUp>
+        <FadeUp><h1 style={{ fontFamily: "'Bebas Neue', Impact, sans-serif", fontSize: "clamp(48px,8vw,64px)", color: "white", marginBottom: 40 }}>FAQ</h1></FadeUp>
         {FAQS.map(([q, a]) => (
           <FadeUp key={q}>
             <div style={{ borderBottom: "1px solid rgba(255,255,255,0.07)", paddingBottom: 20, marginBottom: 20 }}>
@@ -838,34 +884,21 @@ export default function App() {
 
   const renderPage = () => {
     switch (activePage) {
-      case "home":
-        return (
-          <>
-            <Hero setActivePage={setActivePage} />
-            <FeaturedSpaces setActivePage={setActivePage} setSelectedVenue={setSelectedVenue} />
-            <Testimonials />
-          </>
-        );
-      case "spaces":
-        return <SpacesPage setActivePage={setActivePage} setSelectedVenue={setSelectedVenue} />;
-      case "venue-detail":
-        return selectedVenue
-          ? <VenueDetail venue={selectedVenue} setActivePage={setActivePage} onBookingSubmitted={onBookingSubmitted} />
-          : <SpacesPage setActivePage={setActivePage} setSelectedVenue={setSelectedVenue} />;
-      case "bookings":
-        return <BookingsPage bookings={bookings} setBookings={setBookings} />;
-      case "community":
-        return (
-          <div style={{ background: "black", minHeight: "100vh", paddingTop: 120, display: "flex", alignItems: "center", justifyContent: "center", padding: "120px 1.25rem 0" }}>
-            <h1 style={{ fontFamily: "'Bebas Neue', Impact, sans-serif", fontSize: "clamp(40px,8vw,64px)", color: "white", textAlign: "center" }}>
-              COMMUNITY <span style={{ color: "#e53e3e" }}>COMING SOON</span>
-            </h1>
-          </div>
-        );
-      case "faq":
-        return <FaqPage />;
-      default:
-        return null;
+      case "home": return (<><Hero setActivePage={setActivePage} /><FeaturedSpaces setActivePage={setActivePage} setSelectedVenue={setSelectedVenue} /><Testimonials /></>);
+      case "spaces": return <SpacesPage setActivePage={setActivePage} setSelectedVenue={setSelectedVenue} />;
+      case "venue-detail": return selectedVenue
+        ? <VenueDetail venue={selectedVenue} setActivePage={setActivePage} onBookingSubmitted={onBookingSubmitted} />
+        : <SpacesPage setActivePage={setActivePage} setSelectedVenue={setSelectedVenue} />;
+      case "bookings": return <BookingsPage bookings={bookings} setBookings={setBookings} />;
+      case "community": return (
+        <div style={{ background: "black", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "120px 1.25rem" }}>
+          <h1 style={{ fontFamily: "'Bebas Neue', Impact, sans-serif", fontSize: "clamp(40px,8vw,64px)", color: "white", textAlign: "center" }}>
+            COMMUNITY <span style={{ color: "#e53e3e" }}>COMING SOON</span>
+          </h1>
+        </div>
+      );
+      case "faq": return <FaqPage />;
+      default: return null;
     }
   };
 
