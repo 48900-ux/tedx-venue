@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from "react";
 
 // ─── GOOGLE SHEETS API ─────────────────────────────────────────────────────────
 
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw6Yl-fHdBO2LvmSNx10Hzi2D3FfBRbke7VH6XQxDhFMc9v9cpMn4uPVoBNqSS6Fb7J/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx105LsR7P9Ea47Kv1w5f747MnokpLJq-Xm2VwfpK6STkY0n3OI9RFC6UwwqmfVixqa/exec";
 
 async function apiGetBookings() {
   try {
